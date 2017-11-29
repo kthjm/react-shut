@@ -1,11 +1,11 @@
 {
-  "name": "react-slidelay",
+  "name": "react-shut",
   "version": "0.0.0",
   "description": "",
   "main": "dist/cjs.js",
   "jsnext:main": "dist/es.js",
   "module": "dist/es.js",
-  "repository": "kthjm/react-slidelay",
+  "repository": "kthjm/react-shut",
   "author": "kthjm <toxictoxer@gmail.com>",
   "license": "MIT",
   "keywords": [],
@@ -17,17 +17,21 @@
     "include": [
       "src"
     ],
+    "exclude": [
+      "src/experiment"
+    ],
     "sourceMap": false,
     "instrument": false
   },
   "scripts": {
     "//pretest": "flow",
     "test": "cross-env NODE_ENV=TEST nyc mocha",
-    "//prebuild": "yarn test",
+    "prebuild": "yarn test",
     "build": "cross-env NODE_ENV=BUILD node rollup.config.js",
-    "postbuild": "run-s format copy",
+    "postbuild": "run-s test:exec format copy",
+    "test:exec": "node ./dist/cjs.js",
     "format": "prettier --write **/*.js",
-    "copy": "flow-copy-source --verbose ./src ./dist",
+    "copy": "flow-copy-source --verbose ./src ./dist --ignore experiment/*.js",
     "report": "nyc report --reporter=lcov",
     "codecov": "codecov",
     "coverage": "run-s report codecov"

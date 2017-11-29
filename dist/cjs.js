@@ -1,24 +1,13 @@
 'use strict'
 
+Object.defineProperty(exports, '__esModule', { value: true })
+
 function _interopDefault(ex) {
   return ex && typeof ex === 'object' && 'default' in ex ? ex['default'] : ex
 }
 
 var React = _interopDefault(require('react'))
-
-var _typeof =
-  typeof Symbol === 'function' && typeof Symbol.iterator === 'symbol'
-    ? function(obj) {
-        return typeof obj
-      }
-    : function(obj) {
-        return obj &&
-          typeof Symbol === 'function' &&
-          obj.constructor === Symbol &&
-          obj !== Symbol.prototype
-          ? 'symbol'
-          : typeof obj
-      }
+var Atra = _interopDefault(require('atra'))
 
 var classCallCheck = function(instance, Constructor) {
   if (!(instance instanceof Constructor)) {
@@ -78,223 +67,150 @@ var possibleConstructorReturn = function(self, call) {
     : self
 }
 
-var toConsumableArray = function(arr) {
-  if (Array.isArray(arr)) {
-    for (var i = 0, arr2 = Array(arr.length); i < arr.length; i++)
-      arr2[i] = arr[i]
+//
 
-    return arr2
-  } else {
-    return Array.from(arr)
+var Pre = (function() {
+  function Pre() {
+    classCallCheck(this, Pre)
+
+    this.active = false
+  }
+
+  createClass(Pre, [
+    {
+      key: 'init',
+      value: function init(touch) {
+        this.state = {
+          now: Date.now(),
+          x: touch.pageX,
+          y: touch.pageY,
+          doneCheckScroll: false,
+          settle: undefined
+        }
+
+        this.active = true
+      }
+    },
+    {
+      key: 'isScroll',
+      value: function isScroll(compareY) {
+        if (!this.state.doneCheckScroll) {
+          var diffY = compareY - this.state.y
+
+          if (diffY > 10 || diffY < -10) {
+            this.kill()
+            return true
+          } else {
+            this.state.doneCheckScroll = true
+          }
+        }
+      }
+    },
+    {
+      key: 'setX',
+      value: function setX(x) {
+        this.state.x = x
+      }
+    },
+    {
+      key: 'getX',
+      value: function getX() {
+        return this.state.x
+      }
+    },
+    {
+      key: 'setY',
+      value: function setY(y) {
+        this.state.y = y
+      }
+    },
+    {
+      key: 'getY',
+      value: function getY() {
+        return this.state.y
+      }
+    },
+    {
+      key: 'setSettle',
+      value: function setSettle(f) {
+        this.state.settle = f
+      }
+    },
+    {
+      key: 'getSettle',
+      value: function getSettle() {
+        return this.state.settle
+      }
+    },
+    {
+      key: 'setNow',
+      value: function setNow() {
+        this.state.now = Date.now()
+      }
+    },
+    {
+      key: 'getNow',
+      value: function getNow() {
+        return this.state.now
+      }
+    },
+    {
+      key: 'kill',
+      value: function kill() {
+        this.state = null
+        this.active = false
+      }
+    }
+  ])
+  return Pre
+})()
+
+//
+
+var DURATION = '0.4s'
+var BACKGROUND = 'rgb(251, 251, 251)'
+var TOUCH_RATIO = 0.4
+var QUIT_RAIO = 0.6
+
+var lag = function lag() {
+  var time =
+    arguments.length > 0 && arguments[0] !== undefined ? arguments[0] : 0
+  return new Promise(function(resolve) {
+    return setTimeout(resolve, time)
+  })
+}
+
+var isFn = function isFn(target) {
+  return typeof target === 'function'
+}
+
+var RootRef = function RootRef(react, key) {
+  return function(target) {
+    if (target && !react.rootSize) {
+      react.rootSize = function() {
+        return target[key]
+      }
+    }
+  }
+}
+
+var OnTransitionEnd = function OnTransitionEnd(react, onComeKey) {
+  return function(e) {
+    if (e.target === e.currentTarget) {
+      var onCuit =
+        e.currentTarget.style.transform === onComeKey
+          ? react.props.onCome
+          : react.props.onQuit
+
+      return isFn(onCuit) && onCuit(e)
+    }
   }
 }
 
 //
-var Shut = (function(_React$Component) {
-  inherits(Shut, _React$Component)
-
-  function Shut(props) {
-    classCallCheck(this, Shut)
-
-    var _this = possibleConstructorReturn(
-      this,
-      (Shut.__proto__ || Object.getPrototypeOf(Shut)).call(this, props)
-    )
-
-    _this.state = { x: props.rash ? 0 : innerWidth }
-
-    _this.rootAttr = {
-      onTouchStart: _this.touchStart.bind(_this),
-      onTouchMove: _this.touchMove.bind(_this),
-      onTouchEnd: _this.touchEnd.bind(_this),
-      style: rootStyle
-    }
-
-    _this.mobileAttr = (function() {
-      var onTransitionEnd = _this.transitionEnd.bind(_this)
-      return function() {
-        return {
-          onTransitionEnd: onTransitionEnd,
-          style: mobileStyle(
-            _this.state.x,
-            _this.props.mobile.transition,
-            _this.props.mobile.background
-          )
-        }
-      }
-    })()
-
-    _this.scrollAttr = function() {
-      return {
-        children: _this.props.children,
-        style: scrollStyle(_this.state.x)
-      }
-    }
-
-    _this.Quit = (function() {
-      if (!props.Quit) {
-        return false
-      } else {
-        var Quit = props.Quit,
-          f = _this.quitHandler.bind(_this)
-
-        return function() {
-          return React.createElement(Quit, { f: f })
-        }
-      }
-    })()
-    return _this
-  }
-
-  createClass(Shut, [
-    {
-      key: 'lifecycleHandle',
-      value: function lifecycleHandle(key, props, arg) {
-        var lifecycles = props.lifecycles
-
-        var lifecycle =
-          (typeof lifecycles === 'undefined'
-            ? 'undefined'
-            : _typeof(lifecycles)) === 'object' && lifecycles[key]
-
-        if (typeof lifecycle === 'function') {
-          arg = arg || []
-          lifecycle.apply(undefined, toConsumableArray(arg))
-        }
-      }
-    },
-    {
-      key: 'componentWillMount',
-      value: function componentWillMount() {
-        return execLifeCycle('WillMount', this.props)
-      }
-    },
-    {
-      key: 'componentWillReceiveProps',
-      value: function componentWillReceiveProps(nextProps) {
-        return nextProps.quit
-          ? this.quit()
-          : execLifeCycle('WillReceiveProps', this.props, [nextProps])
-      }
-    },
-    {
-      key: 'render',
-      value: function render() {
-        var rootAttr = this.rootAttr,
-          mobileAttr = this.mobileAttr,
-          scrollAttr = this.scrollAttr,
-          Quit = this.Quit
-
-        return React.createElement(
-          'div',
-          rootAttr,
-          React.createElement(
-            'div',
-            mobileAttr(),
-            React.createElement('div', scrollAttr()),
-            Quit && Quit()
-          )
-        )
-      }
-    },
-    {
-      key: 'componentDidMount',
-      value: function componentDidMount() {
-        var _this2 = this
-
-        if (!this.props.rash) {
-          setTimeout(function() {
-            return _this2.come()
-          }, 0)
-          var first = this.props.callbacks.first
-
-          if (first) first()
-        }
-        return execLifeCycle('DidMount', this.props)
-      }
-    },
-    {
-      key: 'componentDidUpdate',
-      value: function componentDidUpdate(prevProps, prevState) {
-        return execLifeCycle('DidUpdate', this.props, [prevProps, prevState])
-      }
-    },
-    {
-      key: 'componentWillUnmount',
-      value: function componentWillUnmount() {
-        return execLifeCycle('WillUnmount', this.props)
-      }
-    },
-    {
-      key: 'touchStart',
-      value: function touchStart(_ref) {
-        var touches = _ref.touches
-
-        if (cantStart(touches, this.props.widthRatio)) return false
-        this.pre = new Pre(touches[0], { virgin: true })
-      }
-    },
-    {
-      key: 'touchMove',
-      value: function touchMove(e) {
-        if (!this.pre) return false
-
-        var touch = e.touches[0]
-        var pre = this.pre,
-          state = this.state
-
-        if (pre.virgin) {
-          var yDiff = touch.pageY - pre.y
-          if (yDiff < -10 || yDiff > 10) {
-            this.pre = null
-            return false
-          }
-        }
-
-        var xDiff = touch.pageX - pre.x
-        var iai = xDiff < 0 ? 'come' : 'quit'
-        var x = state.x + xDiff
-
-        this.pre = new Pre(touch, { iai: iai })
-
-        return x <= 0
-          ? state.x !== 0 ? this.come() : false
-          : this.setState({ x: x })
-      }
-    },
-    {
-      key: 'touchEnd',
-      value: function touchEnd(e) {
-        var pre = this.pre
-
-        if (!pre) return false
-
-        var now = Date.now()
-
-        if (now - pre.now < 26) {
-          var iai = this[pre.iai]
-          if (typeof iai === 'function') {
-            iai.call(this)
-          }
-        } else {
-          var quit = this.quit,
-            come = this.come
-
-          var qome = this.state.x > innerWidth * 0.6 ? quit : come
-
-          qome.call(this)
-        }
-
-        this.pre = null
-      }
-    },
-    {
-      key: 'quitHandler',
-      value: function quitHandler(e) {
-        e.stopPropagation()
-        this.quit()
-      }
-    },
+var ShutFromRight = (function(_React$Component) {
+  inherits(ShutFromRight, _React$Component)
+  createClass(ShutFromRight, [
     {
       key: 'come',
       value: function come() {
@@ -304,86 +220,835 @@ var Shut = (function(_React$Component) {
     {
       key: 'quit',
       value: function quit() {
-        this.setState({ x: innerWidth })
+        this.setState({ x: this.nowRootSize })
       }
     },
     {
-      key: 'transitionEnd',
-      value: function transitionEnd(e) {
-        var target = e.target,
-          currentTarget = e.currentTarget,
-          propertyName = e.propertyName
-
-        if (target !== currentTarget || propertyName !== 'transform') {
-          return false
-        } else {
-          var transform = target.style.transform
-          var _props$callbacks = this.props.callbacks,
-            come = _props$callbacks.come,
-            quit = _props$callbacks.quit
-
-          var callback = transform === 'translateX(0px)' ? come : quit
-          if (callback) {
-            callback()
-          }
-        }
+      key: 'canInit',
+      value: function canInit(touches) {
+        var touchRatio = this.props.touchRatio || TOUCH_RATIO
+        var reactionField = window.innerWidth * touchRatio
+        return touches.length === 1 && touches[0].pageX < reactionField
       }
     }
   ])
-  return Shut
+
+  function ShutFromRight(props) {
+    classCallCheck(this, ShutFromRight)
+
+    var _this = possibleConstructorReturn(
+      this,
+      (ShutFromRight.__proto__ || Object.getPrototypeOf(ShutFromRight)).call(
+        this,
+        props
+      )
+    )
+
+    _this.nowRootSize = window.innerWidth
+    _this.state = { x: props.mountWithShut ? _this.nowRootSize : 0 }
+    _this.pre = new Pre()
+    _this.rootRef = RootRef(_this, 'clientWidth')
+    _this.come = _this.come.bind(_this)
+    _this.quit = _this.quit.bind(_this)
+    return _this
+  }
+
+  createClass(ShutFromRight, [
+    {
+      key: 'componentWillMount',
+      value: function componentWillMount() {
+        var _this2 = this
+
+        this.listeners = {}
+
+        this.listeners.onTouchStart = function(_ref) {
+          var touches = _ref.touches
+          return _this2.canInit(touches) && _this2.pre.init(touches[0])
+        }
+
+        this.listeners.onTouchMove = function(_ref2) {
+          var touches = _ref2.touches
+
+          var touch = touches[0]
+          var pre = _this2.pre
+
+          if (pre.active && !pre.isScroll(touch.pageY)) {
+            var nowX = _this2.state.x
+            var diffX = touch.pageX - pre.getX()
+
+            pre.setX(touch.pageX)
+            pre.setSettle(diffX < 0 ? _this2.come : _this2.quit)
+            pre.setNow()
+
+            var nextX = nowX + diffX
+            return nextX > 0
+              ? _this2.setState({ x: nextX })
+              : nowX !== 0 && _this2.come()
+          }
+        }
+
+        this.listeners.onTouchEnd = function() {
+          if (_this2.pre.active) {
+            var pre = _this2.pre,
+              nowRootSize = _this2.nowRootSize
+            var quitRatio = _this2.props.quitRatio
+            var x = _this2.state.x
+
+            var settle =
+              Date.now() - pre.getNow() < 26
+                ? pre.getSettle()
+                : x > nowRootSize * (quitRatio || QUIT_RAIO)
+                  ? _this2.quit
+                  : _this2.come
+
+            settle()
+            pre.kill()
+          }
+        }
+
+        this.listeners.onTransitionEnd = OnTransitionEnd(
+          this,
+          'translateX(0px)'
+        )
+      }
+    },
+    {
+      key: 'render',
+      value: function render() {
+        var _listeners = this.listeners,
+          onTouchStart = _listeners.onTouchStart,
+          onTouchMove = _listeners.onTouchMove,
+          onTouchEnd = _listeners.onTouchEnd,
+          onTransitionEnd = _listeners.onTransitionEnd
+
+        var ref = this.rootRef
+        var nowRootSize = this.nowRootSize
+        var x = this.state.x
+        var _props = this.props,
+          duration = _props.duration,
+          background = _props.background,
+          children = _props.children
+
+        return React.createElement(
+          'div',
+          a('ROOT', {
+            ref: ref,
+            onTouchStart: onTouchStart,
+            onTouchMove: onTouchMove,
+            onTouchEnd: onTouchEnd
+          }),
+          React.createElement(
+            'div',
+            a('MOVE', {
+              onTransitionEnd: onTransitionEnd,
+              style: {
+                background: background || BACKGROUND,
+                transform: 'translateX(' + x + 'px)',
+                transitionDuration:
+                  (x === 0 || x === nowRootSize) && (duration || DURATION)
+              }
+            }),
+            React.createElement(
+              'div',
+              a('WRAP', {
+                style: { overflowY: x === 0 ? 'scroll' : 'hidden' }
+              }),
+              children
+            ),
+            this.createQuit()
+          )
+        )
+      }
+    },
+    {
+      key: 'componentDidMount',
+      value: function componentDidMount() {
+        this.nowRootSize = this.rootSize()
+        return this.props.mountWithShut && lag().then(this.come)
+      }
+    },
+    {
+      key: 'componentDidUpdate',
+      value: function componentDidUpdate() {
+        var rootSize = this.rootSize()
+        if (rootSize !== this.nowRootSize) {
+          this.nowRootSize = rootSize
+        }
+      }
+    },
+    {
+      key: 'createQuit',
+      value: function createQuit() {
+        var Quit = this.props.Quit
+
+        return isFn(Quit) && React.createElement(Quit, { fn: this.quit })
+      }
+    }
+  ])
+  return ShutFromRight
 })(React.Component)
 
-var cantStart = function cantStart(touches, widthRatio) {
-  if (touches.length > 1) {
-    return true
-  } else {
-    widthRatio = widthRatio || 0.4
-    return touches[0].pageX > innerWidth * widthRatio
+var a = Atra({
+  ROOT: {
+    style: {
+      overflow: 'hidden',
+      position: 'absolute',
+      top: 0,
+      bottom: 0,
+      left: 0,
+      right: 0
+    }
+  },
+  MOVE: {
+    style: {
+      position: 'relative',
+      width: '100%',
+      height: '100%',
+      overflow: 'hidden',
+      transitionProperty: 'transform'
+    }
+  },
+  WRAP: {
+    style: {
+      height: '100%',
+      overflowScrolling: 'touch'
+      // WebkitOverflowScrolling: 'touch',
+    }
   }
-}
+})
 
-var Pre = function Pre(_ref2, _ref3) {
-  var pageX = _ref2.pageX,
-    pageY = _ref2.pageY
-  var virgin = _ref3.virgin,
-    iai = _ref3.iai
+//
+var ShutFromLeft = (function(_React$Component) {
+  inherits(ShutFromLeft, _React$Component)
+  createClass(ShutFromLeft, [
+    {
+      key: 'come',
+      value: function come() {
+        this.setState({ x: 0 })
+      }
+    },
+    {
+      key: 'quit',
+      value: function quit() {
+        this.setState({ x: -this.nowRootSize })
+      }
+    },
+    {
+      key: 'canInit',
+      value: function canInit(touches) {
+        var touchRatio = this.props.touchRatio || TOUCH_RATIO
+        var reactionField = window.innerWidth * (1 - touchRatio)
+        return touches.length === 1 && touches[0].pageX > reactionField
+      }
+    }
+  ])
 
-  this.x = pageX
-  this.y = pageY
-  this.now = Date.now()
-  this.virgin = virgin
-  this.iai = iai
-}
+  function ShutFromLeft(props) {
+    classCallCheck(this, ShutFromLeft)
 
-var rootStyle = {
-  position: 'absolute',
-  top: 0,
-  bottom: 0,
-  left: 0,
-  right: 0
-}
+    var _this = possibleConstructorReturn(
+      this,
+      (ShutFromLeft.__proto__ || Object.getPrototypeOf(ShutFromLeft)).call(
+        this,
+        props
+      )
+    )
 
-var TRANSITION = '0.4s'
-var BACKGROUND = 'rgb(251, 251, 251)'
-var mobileStyle = function mobileStyle(x, transition, background) {
-  return {
-    position: 'relative',
-    width: '100%',
-    height: '100%',
-    overflow: 'hidden',
-    transition: (x === 0 || x === innerWidth) && (transition || TRANSITION),
-    transform: 'translateX(' + x + 'px)',
-    background: background || BACKGROUND
+    _this.nowRootSize = window.innerWidth
+    _this.state = { x: props.mountWithShut ? -_this.nowRootSize : 0 }
+    _this.pre = new Pre()
+    _this.rootRef = RootRef(_this, 'clientWidth')
+    _this.come = _this.come.bind(_this)
+    _this.quit = _this.quit.bind(_this)
+    return _this
   }
-}
 
-var scrollStyle = function scrollStyle(x) {
-  return {
-    overflowY: x === 0 ? 'scroll' : 'hidden',
-    height: '100%',
-    WebkitOverflowScrolling: 'touch',
-    overflowScrolling: 'touch'
+  createClass(ShutFromLeft, [
+    {
+      key: 'componentWillMount',
+      value: function componentWillMount() {
+        var _this2 = this
+
+        this.listeners = {}
+
+        this.listeners.onTouchStart = function(_ref) {
+          var touches = _ref.touches
+          return _this2.canInit(touches) && _this2.pre.init(touches[0])
+        }
+
+        this.listeners.onTouchMove = function(_ref2) {
+          var touches = _ref2.touches
+
+          var touch = touches[0]
+          var pre = _this2.pre
+
+          if (pre.active && !pre.isScroll(touch.pageY)) {
+            var nowX = _this2.state.x
+            var diffX = touch.pageX - pre.getX()
+
+            pre.setX(touch.pageX)
+            pre.setSettle(diffX < 0 ? _this2.quit : _this2.come)
+            pre.setNow()
+
+            var nextX = nowX + diffX
+            return nextX < 0
+              ? _this2.setState({ x: nextX })
+              : nowX !== 0 && _this2.come()
+          }
+        }
+
+        this.listeners.onTouchEnd = function() {
+          if (_this2.pre.active) {
+            var pre = _this2.pre,
+              nowRootSize = _this2.nowRootSize
+            var quitRatio = _this2.props.quitRatio
+            var x = _this2.state.x
+
+            var settle =
+              Date.now() - pre.getNow() < 26
+                ? pre.getSettle()
+                : x < -(nowRootSize * (quitRatio || QUIT_RAIO))
+                  ? _this2.quit
+                  : _this2.come
+
+            settle()
+            pre.kill()
+          }
+        }
+
+        this.listeners.onTransitionEnd = OnTransitionEnd(
+          this,
+          'translateX(0px)'
+        )
+      }
+    },
+    {
+      key: 'render',
+      value: function render() {
+        var _listeners = this.listeners,
+          onTouchStart = _listeners.onTouchStart,
+          onTouchMove = _listeners.onTouchMove,
+          onTouchEnd = _listeners.onTouchEnd,
+          onTransitionEnd = _listeners.onTransitionEnd
+
+        var ref = this.rootRef
+        var nowRootSize = this.nowRootSize
+        var x = this.state.x
+        var _props = this.props,
+          duration = _props.duration,
+          background = _props.background,
+          children = _props.children
+
+        return React.createElement(
+          'div',
+          a$1('ROOT', {
+            ref: ref,
+            onTouchStart: onTouchStart,
+            onTouchMove: onTouchMove,
+            onTouchEnd: onTouchEnd
+          }),
+          React.createElement(
+            'div',
+            a$1('MOVE', {
+              onTransitionEnd: onTransitionEnd,
+              style: {
+                background: background || BACKGROUND,
+                transform: 'translateX(' + x + 'px)',
+                transitionDuration:
+                  (x === 0 || x === -nowRootSize) && (duration || DURATION)
+              }
+            }),
+            React.createElement(
+              'div',
+              a$1('WRAP', {
+                style: { overflowY: x === 0 ? 'scroll' : 'hidden' }
+              }),
+              children
+            ),
+            this.createQuit()
+          )
+        )
+      }
+    },
+    {
+      key: 'componentDidMount',
+      value: function componentDidMount() {
+        this.nowRootSize = this.rootSize()
+        return this.props.mountWithShut && lag().then(this.come)
+      }
+    },
+    {
+      key: 'componentDidUpdate',
+      value: function componentDidUpdate() {
+        var rootSize = this.rootSize()
+        if (rootSize !== this.nowRootSize) {
+          this.nowRootSize = rootSize
+        }
+      }
+    },
+    {
+      key: 'createQuit',
+      value: function createQuit() {
+        var Quit = this.props.Quit
+
+        return isFn(Quit) && React.createElement(Quit, { fn: this.quit })
+      }
+    }
+  ])
+  return ShutFromLeft
+})(React.Component)
+
+var a$1 = Atra({
+  ROOT: {
+    style: {
+      overflow: 'hidden',
+      position: 'absolute',
+      top: 0,
+      bottom: 0,
+      left: 0,
+      right: 0
+    }
+  },
+  MOVE: {
+    style: {
+      position: 'relative',
+      width: '100%',
+      height: '100%',
+      overflow: 'hidden',
+      transitionProperty: 'transform'
+    }
+  },
+  WRAP: {
+    style: {
+      height: '100%',
+      overflowScrolling: 'touch'
+      // WebkitOverflowScrolling: 'touch',
+    }
   }
-}
+})
 
-module.exports = Shut
+//
+var ShutFromBottom = (function(_React$Component) {
+  inherits(ShutFromBottom, _React$Component)
+  createClass(ShutFromBottom, [
+    {
+      key: 'come',
+      value: function come() {
+        this.setState({ y: 0 })
+      }
+    },
+    {
+      key: 'quit',
+      value: function quit() {
+        this.setState({ y: this.nowRootSize })
+      }
+    },
+    {
+      key: 'canInit',
+      value: function canInit(touches) {
+        var touchRatio = this.props.touchRatio || TOUCH_RATIO
+        var reactionField = window.innerHeight * touchRatio
+        return touches.length === 1 && touches[0].pageY < reactionField
+      }
+    }
+  ])
+
+  function ShutFromBottom(props) {
+    classCallCheck(this, ShutFromBottom)
+
+    var _this = possibleConstructorReturn(
+      this,
+      (ShutFromBottom.__proto__ || Object.getPrototypeOf(ShutFromBottom)).call(
+        this,
+        props
+      )
+    )
+
+    _this.nowRootSize = window.innerHeight
+    _this.state = { y: props.mountWithShut ? _this.nowRootSize : 0 }
+    _this.pre = new Pre()
+    _this.rootRef = RootRef(_this, 'clientHeight')
+    _this.come = _this.come.bind(_this)
+    _this.quit = _this.quit.bind(_this)
+    return _this
+  }
+
+  createClass(ShutFromBottom, [
+    {
+      key: 'componentWillMount',
+      value: function componentWillMount() {
+        var _this2 = this
+
+        this.listeners = {}
+
+        this.listeners.onTouchStart = function(_ref) {
+          var touches = _ref.touches
+          return _this2.canInit(touches) && _this2.pre.init(touches[0])
+        }
+
+        this.listeners.onTouchMove = function(_ref2) {
+          var touches = _ref2.touches
+
+          var touch = touches[0]
+          var pre = _this2.pre
+
+          if (pre.active) {
+            var nowY = _this2.state.y
+            var diffY = touch.pageY - pre.getY()
+
+            pre.setY(touch.pageY)
+            pre.setSettle(diffY < 0 ? _this2.come : _this2.quit)
+            pre.setNow()
+
+            var nextY = nowY + diffY
+            return nextY > 0
+              ? _this2.setState({ y: nextY })
+              : nowY !== 0 && _this2.come()
+          }
+        }
+
+        this.listeners.onTouchEnd = function() {
+          if (_this2.pre.active) {
+            var pre = _this2.pre,
+              nowRootSize = _this2.nowRootSize
+            var quitRatio = _this2.props.quitRatio
+            var y = _this2.state.y
+
+            var settle =
+              Date.now() - pre.getNow() < 26
+                ? pre.getSettle()
+                : y > nowRootSize * (quitRatio || QUIT_RAIO)
+                  ? _this2.quit
+                  : _this2.come
+
+            settle()
+            pre.kill()
+          }
+        }
+
+        this.listeners.onTransitionEnd = OnTransitionEnd(
+          this,
+          'translateY(0px)'
+        )
+      }
+    },
+    {
+      key: 'render',
+      value: function render() {
+        var _listeners = this.listeners,
+          onTouchStart = _listeners.onTouchStart,
+          onTouchMove = _listeners.onTouchMove,
+          onTouchEnd = _listeners.onTouchEnd,
+          onTransitionEnd = _listeners.onTransitionEnd
+
+        var ref = this.rootRef
+        var nowRootSize = this.nowRootSize
+        var y = this.state.y
+        var _props = this.props,
+          duration = _props.duration,
+          background = _props.background,
+          children = _props.children
+
+        return React.createElement(
+          'div',
+          a$2('ROOT', {
+            ref: ref,
+            onTouchStart: onTouchStart,
+            onTouchMove: onTouchMove,
+            onTouchEnd: onTouchEnd
+          }),
+          React.createElement(
+            'div',
+            a$2('MOVE', {
+              onTransitionEnd: onTransitionEnd,
+              style: {
+                background: background || BACKGROUND,
+                transform: 'translateY(' + y + 'px)',
+                transitionDuration:
+                  (y === 0 || y === nowRootSize) && (duration || DURATION)
+              }
+            }),
+            React.createElement(
+              'div',
+              a$2('WRAP', {
+                style: { overflowY: y === 0 ? 'scroll' : 'hidden' }
+              }),
+              children
+            ),
+            this.createQuit()
+          )
+        )
+      }
+    },
+    {
+      key: 'componentDidMount',
+      value: function componentDidMount() {
+        this.nowRootSize = this.rootSize()
+        return this.props.mountWithShut && lag().then(this.come)
+      }
+    },
+    {
+      key: 'componentDidUpdate',
+      value: function componentDidUpdate() {
+        var rootSize = this.rootSize()
+        if (rootSize !== this.nowRootSize) {
+          this.nowRootSize = rootSize
+        }
+      }
+    },
+    {
+      key: 'createQuit',
+      value: function createQuit() {
+        var Quit = this.props.Quit
+
+        return isFn(Quit) && React.createElement(Quit, { fn: this.quit })
+      }
+    }
+  ])
+  return ShutFromBottom
+})(React.Component)
+
+var a$2 = Atra({
+  ROOT: {
+    style: {
+      overflow: 'hidden',
+      position: 'absolute',
+      top: 0,
+      bottom: 0,
+      left: 0,
+      right: 0
+    }
+  },
+  MOVE: {
+    style: {
+      position: 'relative',
+      width: '100%',
+      height: '100%',
+      overflow: 'hidden',
+      transitionProperty: 'transform'
+    }
+  },
+  WRAP: {
+    style: {
+      height: '100%',
+      overflowScrolling: 'touch'
+      // WebkitOverflowScrolling: 'touch',
+    }
+  }
+})
+
+//
+var ShutFromTop = (function(_React$Component) {
+  inherits(ShutFromTop, _React$Component)
+  createClass(ShutFromTop, [
+    {
+      key: 'come',
+      value: function come() {
+        this.setState({ y: 0 })
+      }
+    },
+    {
+      key: 'quit',
+      value: function quit() {
+        this.setState({ y: -this.nowRootSize })
+      }
+    },
+    {
+      key: 'canInit',
+      value: function canInit(touches) {
+        var touchRatio = this.props.touchRatio || TOUCH_RATIO
+        // const reactionField = this.nowRootSize * (1 - touchRatio)
+        var reactionField = window.innerHeight * (1 - touchRatio)
+        return touches.length === 1 && touches[0].pageY > reactionField
+      }
+    }
+  ])
+
+  function ShutFromTop(props) {
+    classCallCheck(this, ShutFromTop)
+
+    var _this = possibleConstructorReturn(
+      this,
+      (ShutFromTop.__proto__ || Object.getPrototypeOf(ShutFromTop)).call(
+        this,
+        props
+      )
+    )
+
+    _this.nowRootSize = window.innerHeight
+    _this.state = { y: props.mountWithShut ? -_this.nowRootSize : 0 }
+    _this.pre = new Pre()
+    _this.rootRef = RootRef(_this, 'clientHeight')
+    _this.come = _this.come.bind(_this)
+    _this.quit = _this.quit.bind(_this)
+    return _this
+  }
+
+  createClass(ShutFromTop, [
+    {
+      key: 'componentWillMount',
+      value: function componentWillMount() {
+        var _this2 = this
+
+        this.listeners = {}
+
+        this.listeners.onTouchStart = function(_ref) {
+          var touches = _ref.touches
+          return _this2.canInit(touches) && _this2.pre.init(touches[0])
+        }
+
+        this.listeners.onTouchMove = function(_ref2) {
+          var touches = _ref2.touches
+
+          var touch = touches[0]
+          var pre = _this2.pre
+
+          if (pre.active) {
+            var nowY = _this2.state.y
+            var diffY = touch.pageY - pre.getY()
+
+            pre.setY(touch.pageY)
+            pre.setSettle(diffY < 0 ? _this2.quit : _this2.come)
+            pre.setNow()
+
+            var nextY = nowY + diffY
+            return nextY < 0
+              ? _this2.setState({ y: nextY })
+              : nowY !== 0 && _this2.come()
+          }
+        }
+
+        this.listeners.onTouchEnd = function() {
+          if (_this2.pre.active) {
+            var pre = _this2.pre,
+              nowRootSize = _this2.nowRootSize
+            var quitRatio = _this2.props.quitRatio
+            var y = _this2.state.y
+
+            var settle =
+              Date.now() - pre.getNow() < 26
+                ? pre.getSettle()
+                : y < -(nowRootSize * (quitRatio || QUIT_RAIO))
+                  ? _this2.quit
+                  : _this2.come
+
+            settle()
+            pre.kill()
+          }
+        }
+
+        this.listeners.onTransitionEnd = OnTransitionEnd(
+          this,
+          'translateY(0px)'
+        )
+      }
+    },
+    {
+      key: 'render',
+      value: function render() {
+        var _listeners = this.listeners,
+          onTouchStart = _listeners.onTouchStart,
+          onTouchMove = _listeners.onTouchMove,
+          onTouchEnd = _listeners.onTouchEnd,
+          onTransitionEnd = _listeners.onTransitionEnd
+
+        var ref = this.rootRef
+        var nowRootSize = this.nowRootSize
+        var y = this.state.y
+        var _props = this.props,
+          duration = _props.duration,
+          background = _props.background,
+          children = _props.children
+
+        return React.createElement(
+          'div',
+          a$3('ROOT', {
+            ref: ref,
+            onTouchStart: onTouchStart,
+            onTouchMove: onTouchMove,
+            onTouchEnd: onTouchEnd
+          }),
+          React.createElement(
+            'div',
+            a$3('MOVE', {
+              onTransitionEnd: onTransitionEnd,
+              style: {
+                background: background || BACKGROUND,
+                transform: 'translateY(' + y + 'px)',
+                transitionDuration:
+                  (y === 0 || y === -nowRootSize) && (duration || DURATION)
+              }
+            }),
+            React.createElement(
+              'div',
+              a$3('WRAP', {
+                style: { overflowY: y === 0 ? 'scroll' : 'hidden' }
+              }),
+              children
+            ),
+            this.createQuit()
+          )
+        )
+      }
+    },
+    {
+      key: 'componentDidMount',
+      value: function componentDidMount() {
+        this.nowRootSize = this.rootSize()
+        return this.props.mountWithShut && lag().then(this.come)
+      }
+    },
+    {
+      key: 'componentDidUpdate',
+      value: function componentDidUpdate() {
+        var rootSize = this.rootSize()
+        if (rootSize !== this.nowRootSize) {
+          this.nowRootSize = rootSize
+        }
+      }
+    },
+    {
+      key: 'createQuit',
+      value: function createQuit() {
+        var Quit = this.props.Quit
+
+        return isFn(Quit) && React.createElement(Quit, { fn: this.quit })
+      }
+    }
+  ])
+  return ShutFromTop
+})(React.Component)
+
+var a$3 = Atra({
+  ROOT: {
+    style: {
+      overflow: 'hidden',
+      position: 'absolute',
+      top: 0,
+      bottom: 0,
+      left: 0,
+      right: 0
+    }
+  },
+  MOVE: {
+    style: {
+      position: 'relative',
+      width: '100%',
+      height: '100%',
+      overflow: 'hidden',
+      transitionProperty: 'transform'
+    }
+  },
+  WRAP: {
+    style: {
+      height: '100%',
+      overflowScrolling: 'touch'
+      // WebkitOverflowScrolling: 'touch',
+    }
+  }
+})
+
+exports.ShutFromRight = ShutFromRight
+exports.ShutFromLeft = ShutFromLeft
+exports.ShutFromBottom = ShutFromBottom
+exports.ShutFromTop = ShutFromTop

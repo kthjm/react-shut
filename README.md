@@ -5,6 +5,9 @@
 [![Build Status]()]()
 [![Coverage Status]()]()
 
+~~直近のrelativeはoverflowXをhiddenにしないと変になる~~
+=> 解消した
+
 ## Installation
 ```shell
 ```
