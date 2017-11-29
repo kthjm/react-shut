@@ -174,7 +174,7 @@ var QUIT_RAIO = 0.6
 
 var lag = function lag() {
   var time =
-    arguments.length > 0 && arguments[0] !== undefined ? arguments[0] : 15
+    arguments.length > 0 && arguments[0] !== undefined ? arguments[0] : 30
   return new Promise(function(resolve) {
     return setTimeout(resolve, time)
   })
