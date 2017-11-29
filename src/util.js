@@ -5,7 +5,7 @@ export const BACKGROUND = 'rgb(251, 251, 251)'
 export const TOUCH_RATIO = 0.4
 export const QUIT_RAIO = 0.6
 
-export const lag = (time = 0) =>
+export const lag = (time = 15) =>
   new Promise(resolve => setTimeout(resolve, time))
 
 export const isFn = target => typeof target === 'function'
