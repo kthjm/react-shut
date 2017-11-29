@@ -1,6 +1,7 @@
-import ShutFromRight from './FromRight.jsx'
-import ShutFromLeft from './FromLeft.jsx'
-import ShutFromBottom from './FromBottom.jsx'
-import ShutFromTop from './FromTop.jsx'
+import HoShut from './HoShut.jsx'
+import { fromBottom, fromLeft, fromRight, fromTop } from './opts'
 
-export { ShutFromRight, ShutFromLeft, ShutFromBottom, ShutFromTop }
+export const ShutFromBottom = HoShut(fromBottom)
+export const ShutFromLeft = HoShut(fromLeft)
+export const ShutFromRight = HoShut(fromRight)
+export const ShutFromTop = HoShut(fromTop)

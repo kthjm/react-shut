@@ -1,11 +1,13 @@
 // @flow
-const DURATION = '0.4s'
-const TOUCH_RATIO = 0.4
-const QUIT_RAIO = 0.6
+import {
+  DURATION,
+  TOUCH_RATIO,
+  QUIT_RAIO,
+  RootRef,
+  OnTransitionEnd
+} from '../util.js'
 
-const mapByFrom = new Map()
-
-mapByFrom.set('right', react => ({
+export default react => ({
   firstRootSize: window.innerWidth,
 
   rootRef: RootRef(react, 'clientWidth'),
@@ -15,9 +17,8 @@ mapByFrom.set('right', react => ({
   transform: () => `translateX(${react.state.value}px)`,
 
   transitionDuration: () =>
-    ((react.state.value === 0 || react.state.value === react.nowRootSize) &&
-      react.props.duration) ||
-    DURATION,
+    (react.state.value === 0 || react.state.value === react.nowRootSize) &&
+    (react.props.duration || DURATION),
 
   canInit: touches => {
     const touchRatio = react.props.touchRatio || TOUCH_RATIO
@@ -25,7 +26,7 @@ mapByFrom.set('right', react => ({
     return touches.length === 1 && touches[0].pageX < reactionField
   },
 
-  onTouchMove: () => {
+  onTouchMove: ({ touches }) => {
     const touch = touches[0]
     const { pre } = react
 
@@ -63,49 +64,4 @@ mapByFrom.set('right', react => ({
   },
 
   onTransitionEnd: OnTransitionEnd(react, 'translateX(0px)')
-}))
-
-function RootRef(react, key) {
-  return function(target) {
-    if (target && !react.rootSize) {
-      react.rootSize = () => target[key]
-    }
-  }
-}
-
-function OnTransitionEnd(react, key) {
-  return e => {
-    if (e.target === e.currentTarget) {
-      const onCuit =
-        e.currentTarget.style.transform === onComeKey
-          ? react.props.onCome
-          : react.props.onQuit
-
-      return isFn(onCuit) && onCuit(e)
-    }
-  }
-}
-
-export default mapByFrom
-
-// import {
-//   // DURATION,
-//   // BACKGROUND,
-//   // TOUCH_RATIO,
-//   // QUIT_RAIO,
-//   // lag,
-//   // isFn,
-//   // RootRef,
-//   // OnTransitionEnd
-// } from "./util.js"
-// {
-//   const { value } = react.state
-//   const { nowRootSize } = react
-//   const duration = react.props.duration || DURATION
-//   return (value === 0 || value === nowRootSize) && (duration || DURATION)
-// }
-// function OnTouchStart(react){
-//   return ({ touches }) =>
-//     react.canInit(touches) &&
-//     react.pre.init(touches[0])
-// }
+})

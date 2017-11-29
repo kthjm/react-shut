@@ -1,13 +1,13 @@
 {
   "name": "react-shut",
   "version": "0.0.0",
-  "description": "",
   "main": "dist/cjs.js",
   "jsnext:main": "dist/es.js",
   "module": "dist/es.js",
   "repository": "kthjm/react-shut",
   "author": "kthjm <toxictoxer@gmail.com>",
   "license": "MIT",
+  "description": "",
   "keywords": [],
   "nyc": {
     "require": [
@@ -18,7 +18,7 @@
       "src"
     ],
     "exclude": [
-      "src/experiment"
+      "src/garbage"
     ],
     "sourceMap": false,
     "instrument": false
@@ -31,10 +31,10 @@
     "postbuild": "run-s test:exec format copy",
     "test:exec": "node ./dist/cjs.js",
     "format": "prettier --write **/*.js",
-    "copy": "flow-copy-source --verbose ./src ./dist --ignore experiment/*.js",
+    "copy": "flow-copy-source --verbose ./src ./dist --ignore garbage/*.jsx",
+    "coverage": "run-s report codecov",
     "report": "nyc report --reporter=lcov",
-    "codecov": "codecov",
-    "coverage": "run-s report codecov"
+    "codecov": "codecov"
   },
   "dependencies": {
     "atra": "^1.1.1"
@@ -68,6 +68,7 @@
     "rewire": "^3.0.2",
     "rollup": "^0.52.0",
     "rollup-plugin-babel": "^3.0.2",
+    "rollup-plugin-commonjs": "^8.2.6",
     "rollup-plugin-flow": "^1.1.1",
     "sinon": "^4.0.1"
   },

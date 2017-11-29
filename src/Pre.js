@@ -1,5 +1,4 @@
 // @flow
-
 export default class Pre {
   constructor() {
     this.active = false
