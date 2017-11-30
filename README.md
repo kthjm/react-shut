@@ -2,7 +2,7 @@
 
 [![npm](https://img.shields.io/npm/v/react-shut.svg?style=flat-square)](https://www.npmjs.com/package/react-shut)
 [![npm](https://img.shields.io/npm/dm/react-shut.svg?style=flat-square)](https://www.npmjs.com/package/react-shut)
-[![CircleCI](https://img.shields.io/circleci/project/github/kthjm/react-shut.svg?style=flat-square)](https://circleci.com/gh/kthjm/react-shut)
+[![Travis](https://img.shields.io/travis/kthjm/react-shut.svg?style=flat-square)](https://travis-ci.org/kthjm/react-shut)
 [![Codecov](https://img.shields.io/codecov/c/github/kthjm/react-shut.svg?style=flat-square)](https://codecov.io/gh/kthjm/react-shut)
 [![cdn](https://img.shields.io/badge/jsdelivr-invalid-a1a1a1.svg?style=flat-square)](https://cdn.jsdelivr.net/npm/react-shut/dist/react-shut.min.js)
 <!-- [![cdn](https://img.shields.io/badge/jsdelivr-latest-e84d3c.svg?style=flat-square)](https://cdn.jsdelivr.net/npm/react-shut/dist/react-shut.min.js) -->
@@ -13,7 +13,6 @@
 ## Usage
 ```js
 import { ShutFromRight } from 'react-shut'
-import Quit from "./Quit.js"
 
 export default (props) =>
   <ShutFromRight {...{
