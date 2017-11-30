@@ -1,10 +1,16 @@
 language: node_js
 node_js:
 - '8'
+cache:
+  yarn: true
+  directories:
+    - node_modules
 after_success:
 - yarn coverage
 deploy:
   provider: npm
   email: toxictoxer@gmail.com
+  api_key:
+    secure: GBn5rFRf8Ys7PoINMQafQy2hpOQyi6DSyKmy0lvUWtBR8GdT6QPapIxzCqXgSOZLoBDRRELos3KT3pAfxSly7f4hxLw+YOZmti6yQ24ab4IfwVl6CKdPt8d/f8NsdhlkJQEZ0vqlRYe6RN3vaS5/JX3KjZZLKR/4yuhqCLKJN1FU+oQFlql8e/SG7MV38dWBV/2SUVbGZkOJGzmeNEk1d+9WE5AvwjxJVjoICuF5p43nPqXUdTeZCa/txbQCuscWaCvtf6YQl2d83etAwn73G90O7M47lgXvPHegp7IfhqQiqkvlr5uuJ1uACerGXI8o8WfMD0uk6Ez0xIDSlyHQl2B4vh9RvgECBqCYxeCd+5Juoe6XFfKCIKm75EB0pHH4IaMvqTIZmF838gaiQnn6PNDgvwYkObrUCRXmDausz6rWmI67xaz1tv5dKK2o4PcuK7REggLmrdaoNUE0S3f6tzqGgQfUhDUzVyp6AVawJeaVCNHplGY7mSrZ+dKw9qAmvzgk+zTdc8bnBv0EkTrvZwRYr2xs0PnI11MbMt662jZpD6pc4+92OgYe4YafiW0FDh69dV91YpvmcOR4QLQuB96BBRWhucF3Yjl5GSsCXBXhb+chIMN+/pG5ZQC55PYA6vfnnng3cIUX3OIoP/CAMibvAAg3MdX+DNv0C3N3IiA=
   on:
     tags: true

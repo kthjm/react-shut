@@ -1,7 +1,11 @@
 src/
 test/
 flow-typed/
+.babelrc
 .flowconfig
 .gitignore
+.prettierignore
 .travis.yml
+rollup.config.rollup.js
+rollup.config.umd.js
 yarn.lock
