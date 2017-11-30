@@ -6,9 +6,8 @@
 [![Codecov](https://img.shields.io/codecov/c/github/kthjm/react-shut.svg?style=flat-square)](https://codecov.io/gh/kthjm/react-shut)
 [![cdn](https://img.shields.io/badge/jsdelivr-latest-e84d3c.svg?style=flat-square)](https://cdn.jsdelivr.net/npm/react-shut/dist/react-shut.min.js)
 
-[**demo**](https://react-shut.netlify.com/)
-
 easy covering layer that moved by touching.
+[**demo**](https://react-shut.netlify.com/)
 
 ## Installation
 ```shell

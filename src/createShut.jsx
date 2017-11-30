@@ -89,8 +89,6 @@ const a = Atra({
       width: '100%',
       height: '100%',
       transitionProperty: 'transform'
-      // position: 'relative',
-      // overflow: 'hidden',
     }
   },
   WRAP: {
@@ -101,6 +99,3 @@ const a = Atra({
     }
   }
 })
-
-// const lag = (time = 60) => new Promise(resolve => setTimeout(resolve, time))
-// const lag = (time = 60) => new Promise(resolve => requestAnimationFrame(resolve))

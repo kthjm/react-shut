@@ -1,25 +1,17 @@
 {
   "name": "react-shut",
-  "version": "0.0.1",
-  "main": "dist/react-shut.cjs.js",
-  "jsnext:main": "dist/react-shut.es.js",
-  "module": "dist/react-shut.es.js",
+  "version": "0.0.2",
   "repository": "kthjm/react-shut",
   "author": "kthjm <toxictoxer@gmail.com>",
   "license": "MIT",
+  "main": "dist/react-shut.cjs.js",
+  "jsnext:main": "dist/react-shut.es.js",
+  "module": "dist/react-shut.es.js",
   "description": "easy covering layer that moved by touching",
   "keywords": ["react"],
   "nyc": {
-    "require": [
-      "babel-register",
-      "jsdom-global/register"
-    ],
-    "include": [
-      "src"
-    ],
-    "exclude": [
-      "src/garbage"
-    ],
+    "require": ["babel-register", "jsdom-global/register"],
+    "include": ["src"],
     "sourceMap": false,
     "instrument": false
   },
@@ -27,14 +19,13 @@
     "//pretest": "flow",
     "test": "cross-env NODE_ENV=TEST nyc mocha",
     "prebuild": "yarn test",
-    "build:rollup": "cross-env NODE_ENV=BUILD node rollup.config.rollup.js",
-    "build:umd": "cross-env NODE_ENV=BUILD rollup -c rollup.config.umd.js",
-    "build": "run-s build:rollup build:umd",
-    "postbuild": "run-s test:exec format",
-    "//postbuild": "run-s test:exec format copy",
-    "test:exec": "node ./dist/react-shut.cjs.js",
-    "format": "prettier --write **/*.js",
-    "copy": "flow-copy-source --verbose ./src ./dist --ignore garbage/*.jsx",
+    "build": "cross-env NODE_ENV=BUILD node rollup.config.all.js",
+    "postbuild": "run-s process format",
+    "process:cjs": "node dist/react-shut.cjs.js",
+    "process:min": "node dist/react-shut.min.js",
+    "process": "run-p process:cjs process:min",
+    "format": "prettier --write **/*.js package.json",
+    "//copy": "flow-copy-source --verbose src dist",
     "coverage": "run-s report codecov",
     "report": "nyc report --reporter=lcov",
     "codecov": "codecov"
