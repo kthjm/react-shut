@@ -4,8 +4,8 @@
 [![npm](https://img.shields.io/npm/dm/react-shut.svg?style=flat-square)](https://www.npmjs.com/package/react-shut)
 [![CircleCI](https://img.shields.io/circleci/project/github/kthjm/react-shut.svg?style=flat-square)](https://circleci.com/gh/kthjm/react-shut)
 [![Codecov](https://img.shields.io/codecov/c/github/kthjm/react-shut.svg?style=flat-square)](https://codecov.io/gh/kthjm/react-shut)
-<!-- [![cdn](https://img.shields.io/badge/jsdelivr-latest-e84d3c.svg?style=flat-square)](https://cdn.jsdelivr.net/npm/react-shut/dist/react-shut.min.js) -->
 [![cdn](https://img.shields.io/badge/jsdelivr-invalid-a1a1a1.svg?style=flat-square)](https://cdn.jsdelivr.net/npm/react-shut/dist/react-shut.min.js)
+<!-- [![cdn](https://img.shields.io/badge/jsdelivr-latest-e84d3c.svg?style=flat-square)](https://cdn.jsdelivr.net/npm/react-shut/dist/react-shut.min.js) -->
 
 ## Installation
 ```shell
@@ -18,7 +18,7 @@ import Quit from "./Quit.js"
 export default (props) =>
   <ShutFromRight {...{
     mountWithShut: true,
-    Quit: Quit,
+    Quit: (props) => <div onClick={props.fn} />,
     onCome: () => {},
     onQuit: () => {},
     background: "#485736",
