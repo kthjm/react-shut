@@ -1,7 +1,10 @@
-import HoShut from './HoShut.jsx'
-import { fromBottom, fromLeft, fromRight, fromTop } from './opts'
+import createShut from './createShut.jsx'
+import seedFromBottom from './seedFromBottom.js'
+import seedFromLeft from './seedFromLeft.js'
+import seedFromRight from './seedFromRight.js'
+import seedFromTop from './seedFromTop.js'
 
-export const ShutFromBottom = HoShut(fromBottom)
-export const ShutFromLeft = HoShut(fromLeft)
-export const ShutFromRight = HoShut(fromRight)
-export const ShutFromTop = HoShut(fromTop)
+export const ShutFromBottom = createShut(seedFromBottom)
+export const ShutFromLeft = createShut(seedFromLeft)
+export const ShutFromRight = createShut(seedFromRight)
+export const ShutFromTop = createShut(seedFromTop)

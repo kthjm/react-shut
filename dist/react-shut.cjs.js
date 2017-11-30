@@ -1,5 +1,13 @@
-import React from 'react'
-import Atra from 'atra'
+'use strict'
+
+Object.defineProperty(exports, '__esModule', { value: true })
+
+function _interopDefault(ex) {
+  return ex && typeof ex === 'object' && 'default' in ex ? ex['default'] : ex
+}
+
+var React = _interopDefault(require('react'))
+var Atra = _interopDefault(require('atra'))
 
 var classCallCheck = function(instance, Constructor) {
   if (!(instance instanceof Constructor)) {
@@ -157,9 +165,10 @@ var Pre = (function() {
 })()
 
 //
+var BACKGROUND = 'rgb(251, 251, 251)'
 var DURATION = '0.4s'
 var TOUCH_RATIO = 0.4
-var QUIT_RAIO = 0.6
+var QUIT_RATIO = 0.6
 
 var isFn = function isFn(target) {
   return typeof target === 'function'
@@ -171,6 +180,25 @@ var RootRef = function RootRef(react, key) {
       react.rootSize = function() {
         return target[key]
       }
+    }
+  }
+}
+
+var OnTouchEnd = function OnTouchEnd(react, quitCondition) {
+  return function() {
+    if (react.pre.active) {
+      var pre = react.pre,
+        nowRootSize = react.nowRootSize
+      var quitRatio = react.props.quitRatio
+      var value = react.state.value
+
+      var settle =
+        Date.now() - pre.getNow() < 26
+          ? pre.getSettle()
+          : quitCondition() ? react.quit : react.come
+
+      settle()
+      pre.kill()
     }
   }
 }
@@ -189,16 +217,7 @@ var OnTransitionEnd = function OnTransitionEnd(react, onComeKey) {
 }
 
 //
-var BACKGROUND = 'rgb(251, 251, 251)'
-var lag = function lag() {
-  var time =
-    arguments.length > 0 && arguments[0] !== undefined ? arguments[0] : 60
-  return new Promise(function(resolve) {
-    return setTimeout(resolve, time)
-  })
-}
-
-var HoShut = function(ho) {
+var createShut = function(seed) {
   return (function(_React$Component) {
     inherits(Shut, _React$Component)
 
@@ -210,7 +229,7 @@ var HoShut = function(ho) {
         (Shut.__proto__ || Object.getPrototypeOf(Shut)).call(this, props)
       )
 
-      var unique = ho(_this)
+      var unique = seed(_this)
 
       // state
       _this.nowRootSize = unique.firstRootSize
@@ -256,6 +275,7 @@ var HoShut = function(ho) {
           var background = this.props.background || BACKGROUND
           var transform = this.renders.transform()
           var transitionDuration = this.renders.transitionDuration()
+          var overflowY = this.state.value === 0 ? 'scroll' : 'hidden'
 
           return React.createElement(
             'div',
@@ -277,11 +297,7 @@ var HoShut = function(ho) {
               }),
               React.createElement(
                 'div',
-                a('WRAP', {
-                  style: {
-                    overflowY: this.state.value === 0 ? 'scroll' : 'hidden'
-                  }
-                }),
+                a('WRAP', { style: { overflowY: overflowY } }),
                 this.props.children
               ),
               this.createQuit()
@@ -292,15 +308,8 @@ var HoShut = function(ho) {
       {
         key: 'componentDidMount',
         value: function componentDidMount() {
-          var _this2 = this
-
           this.nowRootSize = this.rootSize()
-          return (
-            this.props.mountWithShut &&
-            lag().then(function() {
-              return _this2.come()
-            })
-          )
+          return this.props.mountWithShut && requestAnimationFrame(this.come)
         }
       },
       {
@@ -338,11 +347,11 @@ var a = Atra({
   },
   MOVE: {
     style: {
-      position: 'relative',
       width: '100%',
       height: '100%',
-      overflow: 'hidden',
       transitionProperty: 'transform'
+      // position: 'relative',
+      // overflow: 'hidden',
     }
   },
   WRAP: {
@@ -354,8 +363,11 @@ var a = Atra({
   }
 })
 
+// const lag = (time = 60) => new Promise(resolve => setTimeout(resolve, time))
+// const lag = (time = 60) => new Promise(resolve => requestAnimationFrame(resolve))
+
 //
-var fromBottom = function(react) {
+var seedFromBottom = function(react) {
   return {
     firstRootSize: window.innerHeight,
 
@@ -363,17 +375,6 @@ var fromBottom = function(react) {
 
     quit: function quit() {
       return react.setState({ value: react.nowRootSize })
-    },
-
-    transform: function transform() {
-      return 'translateY(' + react.state.value + 'px)'
-    },
-
-    transitionDuration: function transitionDuration() {
-      return (
-        (react.state.value === 0 || react.state.value === react.nowRootSize) &&
-        (react.props.duration || DURATION)
-      )
     },
 
     canInit: function canInit(touches) {
@@ -403,31 +404,31 @@ var fromBottom = function(react) {
       }
     },
 
-    onTouchEnd: function onTouchEnd() {
-      if (react.pre.active) {
-        var pre = react.pre,
-          nowRootSize = react.nowRootSize
-        var quitRatio = react.props.quitRatio
-        var value = react.state.value
+    onTouchEnd: OnTouchEnd(react, function() {
+      var nowRootSize = react.nowRootSize
+      var value = react.state.value
 
-        var settle =
-          Date.now() - pre.getNow() < 26
-            ? pre.getSettle()
-            : value > nowRootSize * (quitRatio || QUIT_RAIO)
-              ? react.quit
-              : react.come
+      var quitRatio = react.props.quitRatio || QUIT_RATIO
+      return value > nowRootSize * quitRatio
+    }),
 
-        settle()
-        pre.kill()
-      }
+    onTransitionEnd: OnTransitionEnd(react, 'translateY(0px)'),
+
+    transform: function transform() {
+      return 'translateY(' + react.state.value + 'px)'
     },
 
-    onTransitionEnd: OnTransitionEnd(react, 'translateY(0px)')
+    transitionDuration: function transitionDuration() {
+      return (
+        (react.state.value === 0 || react.state.value === react.nowRootSize) &&
+        (react.props.duration || DURATION)
+      )
+    }
   }
 }
 
 //
-var fromLeft = function(react) {
+var seedFromLeft = function(react) {
   return {
     firstRootSize: -window.innerWidth,
 
@@ -435,17 +436,6 @@ var fromLeft = function(react) {
 
     quit: function quit() {
       return react.setState({ value: -react.nowRootSize })
-    },
-
-    transform: function transform() {
-      return 'translateX(' + react.state.value + 'px)'
-    },
-
-    transitionDuration: function transitionDuration() {
-      return (
-        (react.state.value === 0 || react.state.value === -react.nowRootSize) &&
-        (react.props.duration || DURATION)
-      )
     },
 
     canInit: function canInit(touches) {
@@ -462,8 +452,8 @@ var fromLeft = function(react) {
 
       if (pre.active && !pre.isScroll(touch.pageY)) {
         var nowX = react.state.value
-
         var diffX = touch.pageX - pre.getX()
+
         pre.setX(touch.pageX)
         pre.setSettle(diffX < 0 ? react.quit : react.come)
         pre.setNow()
@@ -475,39 +465,15 @@ var fromLeft = function(react) {
       }
     },
 
-    onTouchEnd: function onTouchEnd() {
-      if (react.pre.active) {
-        var pre = react.pre,
-          nowRootSize = react.nowRootSize
-        var quitRatio = react.props.quitRatio
-        var value = react.state.value
+    onTouchEnd: OnTouchEnd(react, function() {
+      var nowRootSize = react.nowRootSize
+      var value = react.state.value
 
-        var settle =
-          Date.now() - pre.getNow() < 26
-            ? pre.getSettle()
-            : value < -(nowRootSize * (quitRatio || QUIT_RAIO))
-              ? react.quit
-              : react.come
+      var quitRatio = react.props.quitRatio || QUIT_RATIO
+      return value < -(nowRootSize * quitRatio)
+    }),
 
-        settle()
-        pre.kill()
-      }
-    },
-
-    onTransitionEnd: OnTransitionEnd(react, 'translateX(0px)')
-  }
-}
-
-//
-var fromRight = function(react) {
-  return {
-    firstRootSize: window.innerWidth,
-
-    rootRef: RootRef(react, 'clientWidth'),
-
-    quit: function quit() {
-      return react.setState({ value: react.nowRootSize })
-    },
+    onTransitionEnd: OnTransitionEnd(react, 'translateX(0px)'),
 
     transform: function transform() {
       return 'translateX(' + react.state.value + 'px)'
@@ -515,9 +481,22 @@ var fromRight = function(react) {
 
     transitionDuration: function transitionDuration() {
       return (
-        (react.state.value === 0 || react.state.value === react.nowRootSize) &&
+        (react.state.value === 0 || react.state.value === -react.nowRootSize) &&
         (react.props.duration || DURATION)
       )
+    }
+  }
+}
+
+//
+var seedFromRight = function(react) {
+  return {
+    firstRootSize: window.innerWidth,
+
+    rootRef: RootRef(react, 'clientWidth'),
+
+    quit: function quit() {
+      return react.setState({ value: react.nowRootSize })
     },
 
     canInit: function canInit(touches) {
@@ -534,8 +513,8 @@ var fromRight = function(react) {
 
       if (pre.active && !pre.isScroll(touch.pageY)) {
         var nowX = react.state.value
-
         var diffX = touch.pageX - pre.getX()
+
         pre.setX(touch.pageX)
         pre.setSettle(diffX < 0 ? react.come : react.quit)
         pre.setNow()
@@ -547,31 +526,31 @@ var fromRight = function(react) {
       }
     },
 
-    onTouchEnd: function onTouchEnd() {
-      if (react.pre.active) {
-        var pre = react.pre,
-          nowRootSize = react.nowRootSize
-        var quitRatio = react.props.quitRatio
-        var value = react.state.value
+    onTouchEnd: OnTouchEnd(react, function() {
+      var nowRootSize = react.nowRootSize
+      var value = react.state.value
 
-        var settle =
-          Date.now() - pre.getNow() < 26
-            ? pre.getSettle()
-            : value > nowRootSize * (quitRatio || QUIT_RAIO)
-              ? react.quit
-              : react.come
+      var quitRatio = react.props.quitRatio || QUIT_RATIO
+      return value > nowRootSize * quitRatio
+    }),
 
-        settle()
-        pre.kill()
-      }
+    onTransitionEnd: OnTransitionEnd(react, 'translateX(0px)'),
+
+    transform: function transform() {
+      return 'translateX(' + react.state.value + 'px)'
     },
 
-    onTransitionEnd: OnTransitionEnd(react, 'translateX(0px)')
+    transitionDuration: function transitionDuration() {
+      return (
+        (react.state.value === 0 || react.state.value === react.nowRootSize) &&
+        (react.props.duration || DURATION)
+      )
+    }
   }
 }
 
 //
-var fromTop = function(react) {
+var seedFromTop = function(react) {
   return {
     firstRootSize: -window.innerHeight,
 
@@ -579,17 +558,6 @@ var fromTop = function(react) {
 
     quit: function quit() {
       return react.setState({ value: -react.nowRootSize })
-    },
-
-    transform: function transform() {
-      return 'translateY(' + react.state.value + 'px)'
-    },
-
-    transitionDuration: function transitionDuration() {
-      return (
-        (react.state.value === 0 || react.state.value === -react.nowRootSize) &&
-        (react.props.duration || DURATION)
-      )
     },
 
     canInit: function canInit(touches) {
@@ -619,32 +587,35 @@ var fromTop = function(react) {
       }
     },
 
-    onTouchEnd: function onTouchEnd() {
-      if (react.pre.active) {
-        var pre = react.pre,
-          nowRootSize = react.nowRootSize
-        var quitRatio = react.props.quitRatio
-        var value = react.state.value
+    onTouchEnd: OnTouchEnd(react, function() {
+      var nowRootSize = react.nowRootSize
+      var value = react.state.value
 
-        var settle =
-          Date.now() - pre.getNow() < 26
-            ? pre.getSettle()
-            : value < -(nowRootSize * (quitRatio || QUIT_RAIO))
-              ? react.quit
-              : react.come
+      var quitRatio = react.props.quitRatio || QUIT_RATIO
+      return value < -(nowRootSize * quitRatio)
+    }),
 
-        settle()
-        pre.kill()
-      }
+    onTransitionEnd: OnTransitionEnd(react, 'translateY(0px)'),
+
+    transform: function transform() {
+      return 'translateY(' + react.state.value + 'px)'
     },
 
-    onTransitionEnd: OnTransitionEnd(react, 'translateY(0px)')
+    transitionDuration: function transitionDuration() {
+      return (
+        (react.state.value === 0 || react.state.value === -react.nowRootSize) &&
+        (react.props.duration || DURATION)
+      )
+    }
   }
 }
 
-var ShutFromBottom = HoShut(fromBottom)
-var ShutFromLeft = HoShut(fromLeft)
-var ShutFromRight = HoShut(fromRight)
-var ShutFromTop = HoShut(fromTop)
+var ShutFromBottom = createShut(seedFromBottom)
+var ShutFromLeft = createShut(seedFromLeft)
+var ShutFromRight = createShut(seedFromRight)
+var ShutFromTop = createShut(seedFromTop)
 
-export { ShutFromBottom, ShutFromLeft, ShutFromRight, ShutFromTop }
+exports.ShutFromBottom = ShutFromBottom
+exports.ShutFromLeft = ShutFromLeft
+exports.ShutFromRight = ShutFromRight
+exports.ShutFromTop = ShutFromTop

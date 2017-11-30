@@ -2,10 +2,11 @@
 import {
   DURATION,
   TOUCH_RATIO,
-  QUIT_RAIO,
+  QUIT_RATIO,
   RootRef,
+  OnTouchEnd,
   OnTransitionEnd
-} from '../util.js'
+} from './util.js'
 
 export default react => ({
   firstRootSize: window.innerHeight,
@@ -13,12 +14,6 @@ export default react => ({
   rootRef: RootRef(react, 'clientHeight'),
 
   quit: () => react.setState({ value: react.nowRootSize }),
-
-  transform: () => `translateY(${react.state.value}px)`,
-
-  transitionDuration: () =>
-    (react.state.value === 0 || react.state.value === react.nowRootSize) &&
-    (react.props.duration || DURATION),
 
   canInit: touches => {
     const touchRatio = react.props.touchRatio || TOUCH_RATIO
@@ -45,23 +40,18 @@ export default react => ({
     }
   },
 
-  onTouchEnd: () => {
-    if (react.pre.active) {
-      const { pre, nowRootSize } = react
-      const { quitRatio } = react.props
-      const { value } = react.state
+  onTouchEnd: OnTouchEnd(react, () => {
+    const { nowRootSize } = react
+    const { value } = react.state
+    const quitRatio = react.props.quitRatio || QUIT_RATIO
+    return value > nowRootSize * quitRatio
+  }),
 
-      const settle =
-        Date.now() - pre.getNow() < 26
-          ? pre.getSettle()
-          : value > nowRootSize * (quitRatio || QUIT_RAIO)
-            ? react.quit
-            : react.come
+  onTransitionEnd: OnTransitionEnd(react, 'translateY(0px)'),
 
-      settle()
-      pre.kill()
-    }
-  },
+  transform: () => `translateY(${react.state.value}px)`,
 
-  onTransitionEnd: OnTransitionEnd(react, 'translateY(0px)')
+  transitionDuration: () =>
+    (react.state.value === 0 || react.state.value === react.nowRootSize) &&
+    (react.props.duration || DURATION)
 })

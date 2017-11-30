@@ -2,17 +2,14 @@
 import React from 'react'
 import Atra from 'atra'
 import Pre from './Pre.js'
-import { isFn } from './util.js'
+import { BACKGROUND, isFn } from './util.js'
 
-const BACKGROUND = 'rgb(251, 251, 251)'
-const lag = (time = 60) => new Promise(resolve => setTimeout(resolve, time))
-
-export default ho =>
+export default seed =>
   class Shut extends React.Component {
     constructor(props) {
       super(props)
 
-      const unique = ho(this)
+      const unique = seed(this)
 
       // state
       this.nowRootSize = unique.firstRootSize
@@ -44,11 +41,12 @@ export default ho =>
       const background = this.props.background || BACKGROUND
       const transform = this.renders.transform()
       const transitionDuration = this.renders.transitionDuration()
+      const overflowY = this.state.value === 0 ? 'scroll' : 'hidden'
 
       return (
         <div {...a('ROOT', { ref, onTouchStart, onTouchMove, onTouchEnd })}>
           <div {...a('MOVE', { onTransitionEnd, style: { background, transform, transitionDuration } })}>
-            <div {...a('WRAP', { style: { overflowY: this.state.value === 0 ? 'scroll' : 'hidden' } })}>
+            <div {...a('WRAP', { style: { overflowY } })}>
               {this.props.children}
             </div>
             {this.createQuit()}
@@ -59,7 +57,7 @@ export default ho =>
 
     componentDidMount() {
       this.nowRootSize = this.rootSize()
-      return this.props.mountWithShut && lag().then(() => this.come())
+      return this.props.mountWithShut && requestAnimationFrame(this.come)
     }
 
     componentDidUpdate() {
@@ -88,11 +86,11 @@ const a = Atra({
   },
   MOVE: {
     style: {
-      position: 'relative',
       width: '100%',
       height: '100%',
-      overflow: 'hidden',
       transitionProperty: 'transform'
+      // position: 'relative',
+      // overflow: 'hidden',
     }
   },
   WRAP: {
@@ -103,3 +101,6 @@ const a = Atra({
     }
   }
 })
+
+// const lag = (time = 60) => new Promise(resolve => setTimeout(resolve, time))
+// const lag = (time = 60) => new Promise(resolve => requestAnimationFrame(resolve))

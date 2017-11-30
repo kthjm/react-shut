@@ -13,6 +13,8 @@ import {
 } from '../src'
 
 describe(`index.js`, () => {
+  global.requestAnimationFrame = () => {}
+
   it(`nothing`, () => mount({}))
   it(`with background`, () => mount({ background: 'red' }))
   it(`with duration`, () => mount({ background: '3s' }))
