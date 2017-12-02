@@ -3,9 +3,29 @@ import React from 'react'
 import Atra from 'atra'
 import Pre from './Pre.js'
 import { BACKGROUND, isFn } from './util.js'
+import {
+  type Seed,
+  type Transform,
+  type TransitionDuration,
+  type Come,
+  type Quit,
+  type CanInit,
+  type RootSize
+} from './type.js'
 
-export default seed =>
-  class Shut extends React.Component {
+const raf = (fn: () => void) => window.requestAnimationFrame(fn)
+
+export default (seed: Seed): React$ComponentType<*> =>
+  class Shut extends React.Component<Props,State> {
+    nowRootSize: number
+    pre: Pre
+    come: Come
+    quit: Quit
+    canInit: CanInit
+    rootSize: RootSize
+    a: Atra$Result
+    renders: Renders
+
     constructor(props) {
       super(props)
 
@@ -17,35 +37,38 @@ export default seed =>
       this.pre = new Pre()
 
       // core
-      this.rootRef = unique.rootRef
       this.come = () => this.setState({ value: 0 })
       this.quit = unique.quit
       this.canInit = unique.canInit
 
-      // listener
-      this.listeners = {}
-      this.listeners.onTouchStart = ({ touches }) => this.canInit(touches) && this.pre.init(touches[0])
-      this.listeners.onTouchMove = unique.onTouchMove
-      this.listeners.onTouchEnd = unique.onTouchEnd
-      this.listeners.onTransitionEnd = unique.onTransitionEnd
+      // a
+      this.a = A({
+        ref: unique.rootRef,
+        onTouchStart: ({ touches }) => this.canInit(touches) && this.pre.init(touches[0]),
+        onTouchMove: unique.onTouchMove,
+        onTouchEnd: unique.onTouchEnd,
+        onTransitionEnd: unique.onTransitionEnd
+      })
 
       // render
-      this.renders = {}
-      this.renders.transform = unique.transform
-      this.renders.transitionDuration = unique.transitionDuration
+      this.renders = {
+        transform: unique.transform,
+        transitionDuration: unique.transitionDuration,
+        background: () => this.props.background || BACKGROUND,
+        overflowY: () => this.state.value === 0 ? 'scroll' : 'hidden'
+      }
     }
 
     render() {
-      const ref = this.rootRef
-      const { onTouchStart, onTouchMove, onTouchEnd, onTransitionEnd } = this.listeners
-      const background = this.props.background || BACKGROUND
+      const { a } = this
       const transform = this.renders.transform()
       const transitionDuration = this.renders.transitionDuration()
-      const overflowY = this.state.value === 0 ? 'scroll' : 'hidden'
+      const background = this.renders.background()
+      const overflowY = this.renders.overflowY()
 
       return (
-        <div {...a('ROOT', { ref, onTouchStart, onTouchMove, onTouchEnd })}>
-          <div {...a('MOVE', { onTransitionEnd, style: { background, transform, transitionDuration } })}>
+        <div {...a('ROOT')}>
+          <div {...a('MOVE', { style: { transform, transitionDuration, background } })}>
             <div {...a('WRAP', { style: { overflowY } })}>
               {this.props.children}
             </div>
@@ -57,7 +80,7 @@ export default seed =>
 
     componentDidMount() {
       this.nowRootSize = this.rootSize()
-      return this.props.mountWithShut && requestAnimationFrame(this.come)
+      return this.props.mountWithShut && raf(this.come)
     }
 
     componentDidUpdate() {
@@ -69,12 +92,22 @@ export default seed =>
 
     createQuit() {
       const { Quit } = this.props
-      return isFn(Quit) && <Quit fn={this.quit} />
+      return Quit && isFn(Quit) && <Quit fn={this.quit} />
     }
   }
 
-const a = Atra({
+const A = ({
+  ref,
+  onTouchStart,
+  onTouchMove,
+  onTouchEnd,
+  onTransitionEnd
+}) => Atra({
   ROOT: {
+    ref,
+    onTouchStart,
+    onTouchMove,
+    onTouchEnd,
     style: {
       position: 'absolute',
       top: 0,
@@ -85,6 +118,7 @@ const a = Atra({
     }
   },
   MOVE: {
+    onTransitionEnd,
     style: {
       width: '100%',
       height: '100%',
@@ -99,3 +133,26 @@ const a = Atra({
     }
   }
 })
+
+type State = { value: number }
+
+type Props = {
+  children: React$Node,
+  mountWithShut?: boolean,
+  Quit?: () => React$Node,
+  onCome?: (e: SyntheticTransitionEvent<HTMLDivElement>) => void,
+  onQuit?: (e: SyntheticTransitionEvent<HTMLDivElement>) => void,
+  background?: string,
+  duration?: string,
+  touchRatio?: number,
+  quitRatio?: number
+}
+
+type Atra$Result = (name: string, opts: any) => any
+
+type Renders = {
+  transform: Transform,
+  transitionDuration: TransitionDuration,
+  background: () => string,
+  overflowY: () => string
+}

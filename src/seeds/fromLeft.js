@@ -3,21 +3,23 @@ import {
   DURATION,
   TOUCH_RATIO,
   QUIT_RATIO,
-  RootRef,
-  OnTouchEnd,
-  OnTransitionEnd
-} from './util.js'
+  winnerWidth,
+  createRootRef,
+  createOnTouchEnd,
+  createOnTransitionEnd
+} from '../util.js'
+import { type Seed } from '../type.js'
 
-export default react => ({
-  firstRootSize: -window.innerWidth,
+const seed: Seed = react => ({
+  firstRootSize: -winnerWidth(),
 
-  rootRef: RootRef(react, 'clientWidth'),
+  rootRef: createRootRef(react, 'clientWidth'),
 
   quit: () => react.setState({ value: -react.nowRootSize }),
 
   canInit: touches => {
     const touchRatio = react.props.touchRatio || TOUCH_RATIO
-    const reactionField = window.innerWidth * (1 - touchRatio)
+    const reactionField = winnerWidth() * (1 - touchRatio)
     return touches.length === 1 && touches[0].pageX > reactionField
   },
 
@@ -25,7 +27,7 @@ export default react => ({
     const touch = touches[0]
     const { pre } = react
 
-    if (pre.active && !pre.isScroll(touch.pageY)) {
+    if (pre.active() && pre.notScroll(touch.pageY)) {
       const nowX = react.state.value
       const diffX = touch.pageX - pre.getX()
 
@@ -40,14 +42,14 @@ export default react => ({
     }
   },
 
-  onTouchEnd: OnTouchEnd(react, () => {
+  onTouchEnd: createOnTouchEnd(react, () => {
     const { nowRootSize } = react
     const { value } = react.state
     const quitRatio = react.props.quitRatio || QUIT_RATIO
     return value < -(nowRootSize * quitRatio)
   }),
 
-  onTransitionEnd: OnTransitionEnd(react, 'translateX(0px)'),
+  onTransitionEnd: createOnTransitionEnd(react, 'translateX(0px)'),
 
   transform: () => `translateX(${react.state.value}px)`,
 
@@ -55,3 +57,5 @@ export default react => ({
     (react.state.value === 0 || react.state.value === -react.nowRootSize) &&
     (react.props.duration || DURATION)
 })
+
+export default seed

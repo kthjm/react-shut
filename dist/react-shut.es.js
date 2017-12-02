@@ -1,6 +1,22 @@
 import React from 'react'
 import Atra from 'atra'
 
+//
+
+var _typeof =
+  typeof Symbol === 'function' && typeof Symbol.iterator === 'symbol'
+    ? function(obj) {
+        return typeof obj
+      }
+    : function(obj) {
+        return obj &&
+          typeof Symbol === 'function' &&
+          obj.constructor === Symbol &&
+          obj !== Symbol.prototype
+          ? 'symbol'
+          : typeof obj
+      }
+
 var classCallCheck = function(instance, Constructor) {
   if (!(instance instanceof Constructor)) {
     throw new TypeError('Cannot call a class as a function')
@@ -60,41 +76,45 @@ var possibleConstructorReturn = function(self, call) {
 }
 
 //
+var now = function now() {
+  return Date.now()
+}
+
 var Pre = (function() {
   function Pre() {
     classCallCheck(this, Pre)
-
-    this.active = false
   }
 
   createClass(Pre, [
     {
+      key: 'active',
+      value: function active() {
+        return Boolean(this.state) && _typeof(this.state) === 'object'
+      }
+    },
+    {
       key: 'init',
       value: function init(touch) {
         this.state = {
-          now: Date.now(),
+          now: now(),
           x: touch.pageX,
           y: touch.pageY,
           doneCheckScroll: false,
           settle: undefined
         }
-
-        this.active = true
       }
     },
     {
-      key: 'isScroll',
-      value: function isScroll(compareY) {
+      key: 'notScroll',
+      value: function notScroll(compareY) {
         if (!this.state.doneCheckScroll) {
           var diffY = compareY - this.state.y
-
           if (diffY > 10 || diffY < -10) {
-            this.kill()
-            return true
-          } else {
-            this.state.doneCheckScroll = true
+            return this.kill()
           }
+          this.state.doneCheckScroll = true
         }
+        return true
       }
     },
     {
@@ -136,7 +156,7 @@ var Pre = (function() {
     {
       key: 'setNow',
       value: function setNow() {
-        this.state.now = Date.now()
+        this.state.now = now()
       }
     },
     {
@@ -149,7 +169,6 @@ var Pre = (function() {
       key: 'kill',
       value: function kill() {
         this.state = null
-        this.active = false
       }
     }
   ])
@@ -162,28 +181,32 @@ var DURATION = '0.4s'
 var TOUCH_RATIO = 0.4
 var QUIT_RATIO = 0.6
 
+var winnerWidth = function winnerWidth() {
+  return window.innerWidth
+}
+var winnerHeight = function winnerHeight() {
+  return window.innerHeight
+}
 var isFn = function isFn(target) {
   return typeof target === 'function'
 }
 
-var RootRef = function RootRef(react, key) {
+var createRootRef = function createRootRef(react, key) {
   return function(target) {
     if (target && !react.rootSize) {
-      react.rootSize = function() {
+      var rootSize = function rootSize() {
         return target[key]
       }
+      react.rootSize = rootSize
     }
   }
 }
 
-var OnTouchEnd = function OnTouchEnd(react, quitCondition) {
+var createOnTouchEnd = function createOnTouchEnd(react, quitCondition) {
   return function() {
-    if (react.pre.active) {
-      var pre = react.pre,
-        nowRootSize = react.nowRootSize
-      var quitRatio = react.props.quitRatio
-      var value = react.state.value
+    var pre = react.pre
 
+    if (pre.active()) {
       var settle =
         Date.now() - pre.getNow() < 26
           ? pre.getSettle()
@@ -195,20 +218,25 @@ var OnTouchEnd = function OnTouchEnd(react, quitCondition) {
   }
 }
 
-var OnTransitionEnd = function OnTransitionEnd(react, onComeKey) {
+var createOnTransitionEnd = function createOnTransitionEnd(react, onComeKey) {
   return function(e) {
+    e.currentTarget
     if (e.target === e.currentTarget) {
       var onCuit =
         e.currentTarget.style.transform === onComeKey
           ? react.props.onCome
           : react.props.onQuit
 
-      return isFn(onCuit) && onCuit(e)
+      return onCuit && isFn(onCuit) && onCuit(e)
     }
   }
 }
 
 //
+var raf = function raf(fn) {
+  return window.requestAnimationFrame(fn)
+}
+
 var createShut = function(seed) {
   return (function(_React$Component) {
     inherits(Shut, _React$Component)
@@ -229,27 +257,35 @@ var createShut = function(seed) {
       _this.pre = new Pre()
 
       // core
-      _this.rootRef = unique.rootRef
       _this.come = function() {
         return _this.setState({ value: 0 })
       }
       _this.quit = unique.quit
       _this.canInit = unique.canInit
 
-      // listener
-      _this.listeners = {}
-      _this.listeners.onTouchStart = function(_ref) {
-        var touches = _ref.touches
-        return _this.canInit(touches) && _this.pre.init(touches[0])
-      }
-      _this.listeners.onTouchMove = unique.onTouchMove
-      _this.listeners.onTouchEnd = unique.onTouchEnd
-      _this.listeners.onTransitionEnd = unique.onTransitionEnd
+      // a
+      _this.a = A({
+        ref: unique.rootRef,
+        onTouchStart: function onTouchStart(_ref) {
+          var touches = _ref.touches
+          return _this.canInit(touches) && _this.pre.init(touches[0])
+        },
+        onTouchMove: unique.onTouchMove,
+        onTouchEnd: unique.onTouchEnd,
+        onTransitionEnd: unique.onTransitionEnd
+      })
 
       // render
-      _this.renders = {}
-      _this.renders.transform = unique.transform
-      _this.renders.transitionDuration = unique.transitionDuration
+      _this.renders = {
+        transform: unique.transform,
+        transitionDuration: unique.transitionDuration,
+        background: function background() {
+          return _this.props.background || BACKGROUND
+        },
+        overflowY: function overflowY() {
+          return _this.state.value === 0 ? 'scroll' : 'hidden'
+        }
+      }
       return _this
     }
 
@@ -257,34 +293,23 @@ var createShut = function(seed) {
       {
         key: 'render',
         value: function render() {
-          var ref = this.rootRef
-          var _listeners = this.listeners,
-            onTouchStart = _listeners.onTouchStart,
-            onTouchMove = _listeners.onTouchMove,
-            onTouchEnd = _listeners.onTouchEnd,
-            onTransitionEnd = _listeners.onTransitionEnd
+          var a = this.a
 
-          var background = this.props.background || BACKGROUND
           var transform = this.renders.transform()
           var transitionDuration = this.renders.transitionDuration()
-          var overflowY = this.state.value === 0 ? 'scroll' : 'hidden'
+          var background = this.renders.background()
+          var overflowY = this.renders.overflowY()
 
           return React.createElement(
             'div',
-            a('ROOT', {
-              ref: ref,
-              onTouchStart: onTouchStart,
-              onTouchMove: onTouchMove,
-              onTouchEnd: onTouchEnd
-            }),
+            a('ROOT'),
             React.createElement(
               'div',
               a('MOVE', {
-                onTransitionEnd: onTransitionEnd,
                 style: {
-                  background: background,
                   transform: transform,
-                  transitionDuration: transitionDuration
+                  transitionDuration: transitionDuration,
+                  background: background
                 }
               }),
               React.createElement(
@@ -301,7 +326,7 @@ var createShut = function(seed) {
         key: 'componentDidMount',
         value: function componentDidMount() {
           this.nowRootSize = this.rootSize()
-          return this.props.mountWithShut && requestAnimationFrame(this.come)
+          return this.props.mountWithShut && raf(this.come)
         }
       },
       {
@@ -318,7 +343,9 @@ var createShut = function(seed) {
         value: function createQuit() {
           var Quit = this.props.Quit
 
-          return isFn(Quit) && React.createElement(Quit, { fn: this.quit })
+          return (
+            Quit && isFn(Quit) && React.createElement(Quit, { fn: this.quit })
+          )
         }
       }
     ])
@@ -326,39 +353,51 @@ var createShut = function(seed) {
   })(React.Component)
 }
 
-var a = Atra({
-  ROOT: {
-    style: {
-      position: 'absolute',
-      top: 0,
-      bottom: 0,
-      left: 0,
-      right: 0,
-      overflow: 'hidden'
+var A = function A(_ref2) {
+  var ref = _ref2.ref,
+    onTouchStart = _ref2.onTouchStart,
+    onTouchMove = _ref2.onTouchMove,
+    onTouchEnd = _ref2.onTouchEnd,
+    onTransitionEnd = _ref2.onTransitionEnd
+  return Atra({
+    ROOT: {
+      ref: ref,
+      onTouchStart: onTouchStart,
+      onTouchMove: onTouchMove,
+      onTouchEnd: onTouchEnd,
+      style: {
+        position: 'absolute',
+        top: 0,
+        bottom: 0,
+        left: 0,
+        right: 0,
+        overflow: 'hidden'
+      }
+    },
+    MOVE: {
+      onTransitionEnd: onTransitionEnd,
+      style: {
+        width: '100%',
+        height: '100%',
+        transitionProperty: 'transform'
+      }
+    },
+    WRAP: {
+      style: {
+        height: '100%',
+        overflowScrolling: 'touch',
+        WebkitOverflowScrolling: 'touch'
+      }
     }
-  },
-  MOVE: {
-    style: {
-      width: '100%',
-      height: '100%',
-      transitionProperty: 'transform'
-    }
-  },
-  WRAP: {
-    style: {
-      height: '100%',
-      overflowScrolling: 'touch',
-      WebkitOverflowScrolling: 'touch'
-    }
-  }
-})
+  })
+}
 
 //
-var seedFromBottom = function(react) {
+var seed = function seed(react) {
   return {
-    firstRootSize: window.innerHeight,
+    firstRootSize: winnerHeight(),
 
-    rootRef: RootRef(react, 'clientHeight'),
+    rootRef: createRootRef(react, 'clientHeight'),
 
     quit: function quit() {
       return react.setState({ value: react.nowRootSize })
@@ -366,7 +405,7 @@ var seedFromBottom = function(react) {
 
     canInit: function canInit(touches) {
       var touchRatio = react.props.touchRatio || TOUCH_RATIO
-      var reactionField = window.innerHeight * touchRatio
+      var reactionField = winnerHeight() * touchRatio
       return touches.length === 1 && touches[0].pageY < reactionField
     },
 
@@ -376,7 +415,7 @@ var seedFromBottom = function(react) {
       var touch = touches[0]
       var pre = react.pre
 
-      if (pre.active) {
+      if (pre.active()) {
         var nowY = react.state.value
         var diffY = touch.pageY - pre.getY()
 
@@ -391,7 +430,7 @@ var seedFromBottom = function(react) {
       }
     },
 
-    onTouchEnd: OnTouchEnd(react, function() {
+    onTouchEnd: createOnTouchEnd(react, function() {
       var nowRootSize = react.nowRootSize
       var value = react.state.value
 
@@ -399,7 +438,7 @@ var seedFromBottom = function(react) {
       return value > nowRootSize * quitRatio
     }),
 
-    onTransitionEnd: OnTransitionEnd(react, 'translateY(0px)'),
+    onTransitionEnd: createOnTransitionEnd(react, 'translateY(0px)'),
 
     transform: function transform() {
       return 'translateY(' + react.state.value + 'px)'
@@ -415,11 +454,11 @@ var seedFromBottom = function(react) {
 }
 
 //
-var seedFromLeft = function(react) {
+var seed$1 = function seed(react) {
   return {
-    firstRootSize: -window.innerWidth,
+    firstRootSize: -winnerWidth(),
 
-    rootRef: RootRef(react, 'clientWidth'),
+    rootRef: createRootRef(react, 'clientWidth'),
 
     quit: function quit() {
       return react.setState({ value: -react.nowRootSize })
@@ -427,7 +466,7 @@ var seedFromLeft = function(react) {
 
     canInit: function canInit(touches) {
       var touchRatio = react.props.touchRatio || TOUCH_RATIO
-      var reactionField = window.innerWidth * (1 - touchRatio)
+      var reactionField = winnerWidth() * (1 - touchRatio)
       return touches.length === 1 && touches[0].pageX > reactionField
     },
 
@@ -437,7 +476,7 @@ var seedFromLeft = function(react) {
       var touch = touches[0]
       var pre = react.pre
 
-      if (pre.active && !pre.isScroll(touch.pageY)) {
+      if (pre.active() && pre.notScroll(touch.pageY)) {
         var nowX = react.state.value
         var diffX = touch.pageX - pre.getX()
 
@@ -452,7 +491,7 @@ var seedFromLeft = function(react) {
       }
     },
 
-    onTouchEnd: OnTouchEnd(react, function() {
+    onTouchEnd: createOnTouchEnd(react, function() {
       var nowRootSize = react.nowRootSize
       var value = react.state.value
 
@@ -460,7 +499,7 @@ var seedFromLeft = function(react) {
       return value < -(nowRootSize * quitRatio)
     }),
 
-    onTransitionEnd: OnTransitionEnd(react, 'translateX(0px)'),
+    onTransitionEnd: createOnTransitionEnd(react, 'translateX(0px)'),
 
     transform: function transform() {
       return 'translateX(' + react.state.value + 'px)'
@@ -476,11 +515,11 @@ var seedFromLeft = function(react) {
 }
 
 //
-var seedFromRight = function(react) {
+var seed$2 = function seed(react) {
   return {
-    firstRootSize: window.innerWidth,
+    firstRootSize: winnerWidth(),
 
-    rootRef: RootRef(react, 'clientWidth'),
+    rootRef: createRootRef(react, 'clientWidth'),
 
     quit: function quit() {
       return react.setState({ value: react.nowRootSize })
@@ -488,7 +527,7 @@ var seedFromRight = function(react) {
 
     canInit: function canInit(touches) {
       var touchRatio = react.props.touchRatio || TOUCH_RATIO
-      var reactionField = react.nowRootSize * touchRatio
+      var reactionField = winnerWidth() * touchRatio
       return touches.length === 1 && touches[0].pageX < reactionField
     },
 
@@ -498,7 +537,7 @@ var seedFromRight = function(react) {
       var touch = touches[0]
       var pre = react.pre
 
-      if (pre.active && !pre.isScroll(touch.pageY)) {
+      if (pre.active() && pre.notScroll(touch.pageY)) {
         var nowX = react.state.value
         var diffX = touch.pageX - pre.getX()
 
@@ -513,7 +552,7 @@ var seedFromRight = function(react) {
       }
     },
 
-    onTouchEnd: OnTouchEnd(react, function() {
+    onTouchEnd: createOnTouchEnd(react, function() {
       var nowRootSize = react.nowRootSize
       var value = react.state.value
 
@@ -521,7 +560,7 @@ var seedFromRight = function(react) {
       return value > nowRootSize * quitRatio
     }),
 
-    onTransitionEnd: OnTransitionEnd(react, 'translateX(0px)'),
+    onTransitionEnd: createOnTransitionEnd(react, 'translateX(0px)'),
 
     transform: function transform() {
       return 'translateX(' + react.state.value + 'px)'
@@ -537,11 +576,11 @@ var seedFromRight = function(react) {
 }
 
 //
-var seedFromTop = function(react) {
+var seed$3 = function seed(react) {
   return {
-    firstRootSize: -window.innerHeight,
+    firstRootSize: -winnerHeight(),
 
-    rootRef: RootRef(react, 'clientHeight'),
+    rootRef: createRootRef(react, 'clientHeight'),
 
     quit: function quit() {
       return react.setState({ value: -react.nowRootSize })
@@ -549,7 +588,7 @@ var seedFromTop = function(react) {
 
     canInit: function canInit(touches) {
       var touchRatio = react.props.touchRatio || TOUCH_RATIO
-      var reactionField = window.innerHeight * (1 - touchRatio)
+      var reactionField = winnerHeight() * (1 - touchRatio)
       return touches.length === 1 && touches[0].pageY > reactionField
     },
 
@@ -559,7 +598,7 @@ var seedFromTop = function(react) {
       var touch = touches[0]
       var pre = react.pre
 
-      if (pre.active) {
+      if (pre.active()) {
         var nowY = react.state.value
         var diffY = touch.pageY - pre.getY()
 
@@ -574,7 +613,7 @@ var seedFromTop = function(react) {
       }
     },
 
-    onTouchEnd: OnTouchEnd(react, function() {
+    onTouchEnd: createOnTouchEnd(react, function() {
       var nowRootSize = react.nowRootSize
       var value = react.state.value
 
@@ -582,7 +621,7 @@ var seedFromTop = function(react) {
       return value < -(nowRootSize * quitRatio)
     }),
 
-    onTransitionEnd: OnTransitionEnd(react, 'translateY(0px)'),
+    onTransitionEnd: createOnTransitionEnd(react, 'translateY(0px)'),
 
     transform: function transform() {
       return 'translateY(' + react.state.value + 'px)'
@@ -597,9 +636,9 @@ var seedFromTop = function(react) {
   }
 }
 
-var ShutFromBottom = createShut(seedFromBottom)
-var ShutFromLeft = createShut(seedFromLeft)
-var ShutFromRight = createShut(seedFromRight)
-var ShutFromTop = createShut(seedFromTop)
+var ShutFromBottom = createShut(seed)
+var ShutFromLeft = createShut(seed$1)
+var ShutFromRight = createShut(seed$2)
+var ShutFromTop = createShut(seed$3)
 
 export { ShutFromBottom, ShutFromLeft, ShutFromRight, ShutFromTop }

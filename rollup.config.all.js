@@ -11,7 +11,7 @@ const file = mid => `dist/react-shut.${mid}.js`
 const cjs_and_es = () =>
   rollup({
     input,
-    plugins: [flow(), babel({ exclude: 'node_modules/**' })]
+    plugins: [flow(), babel({ exclude: 'node_modules/**' }), commonjs()]
   }).then(bundle => {
     bundle.write({ format: 'cjs', file: file('cjs') })
     bundle.write({ format: 'es', file: file('es') })
