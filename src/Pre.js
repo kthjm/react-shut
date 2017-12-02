@@ -1,49 +1,59 @@
 // @flow
+import { type Come, type Quit } from './type.js'
+
+type Pre$State = {
+  now: number,
+  x: number,
+  y: number,
+  doneCheckScroll: boolean,
+  settle?: Come | Quit
+}
+
+const now = (): number => Date.now()
+
 export default class Pre {
-  constructor() {
-    this.active = false
+  state: any | Pre$State
+
+  active() {
+    return Boolean(this.state) && typeof this.state === 'object'
   }
 
-  init(touch) {
+  init(touch: Touch) {
     this.state = {
-      now: Date.now(),
+      now: now(),
       x: touch.pageX,
       y: touch.pageY,
       doneCheckScroll: false,
       settle: undefined
     }
-
-    this.active = true
   }
 
-  isScroll(compareY) {
+  notScroll(compareY: number) {
     if (!this.state.doneCheckScroll) {
       const diffY = compareY - this.state.y
-
       if (diffY > 10 || diffY < -10) {
-        this.kill()
-        return true
-      } else {
-        this.state.doneCheckScroll = true
+        return this.kill()
       }
+      this.state.doneCheckScroll = true
     }
+    return true
   }
 
-  setX(x) {
+  setX(x: number) {
     this.state.x = x
   }
   getX() {
     return this.state.x
   }
 
-  setY(y) {
+  setY(y: number) {
     this.state.y = y
   }
   getY() {
     return this.state.y
   }
 
-  setSettle(f) {
+  setSettle(f: Come | Quit) {
     this.state.settle = f
   }
   getSettle() {
@@ -51,7 +61,7 @@ export default class Pre {
   }
 
   setNow() {
-    this.state.now = Date.now()
+    this.state.now = now()
   }
   getNow() {
     return this.state.now
@@ -59,6 +69,5 @@ export default class Pre {
 
   kill() {
     this.state = null
-    this.active = false
   }
 }

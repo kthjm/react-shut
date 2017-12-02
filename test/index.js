@@ -5,32 +5,164 @@ import Adapter from 'enzyme-adapter-react-16'
 import enzyme from 'enzyme'
 enzyme.configure({ adapter: new Adapter() })
 
-import {
-  ShutFromRight,
-  ShutFromLeft,
-  ShutFromBottom,
-  ShutFromTop
-} from '../src'
+describe(`components`, () => {
+  const components = require('../src')
 
-describe(`index.js`, () => {
-  global.requestAnimationFrame = () => {}
+  it(`instance`, () =>
+    all({}, wrapper => {
+      const instance = wrapper.instance()
 
-  it(`nothing`, () => mount({}))
-  it(`with background`, () => mount({ background: 'red' }))
-  it(`with duration`, () => mount({ background: '3s' }))
-  it(`with mountWithShut`, () => mount({ mountWithShut: true }))
-  it(`with touchRatio`, () => mount({ touchRatio: 0.5 }))
-  it(`with quitRatio`, () => mount({ quitRatio: 0.8 }))
-  it(`with Quit`, () => mount({ Quit: () => <div /> }))
+      const { renders } = instance
+      assert.ok(Object.keys(renders).length === 4)
+      assert.ok(typeof renders.transform === 'function')
+      assert.ok(typeof renders.transitionDuration === 'function')
+      assert.ok(typeof renders.background === 'function')
+      assert.ok(typeof renders.overflowY === 'function')
 
-  function mount(props) {
-    enzyme.mount(<ShutFromRight {...props} />)
-    enzyme.mount(<ShutFromLeft {...props} />)
-    enzyme.mount(<ShutFromBottom {...props} />)
-    enzyme.mount(<ShutFromTop {...props} />)
+      const { a } = instance
+
+      const ROOT = a('ROOT')
+      assert.ok(Object.keys(ROOT).length === 5)
+      assert.ok(typeof ROOT.ref === 'function')
+      assert.ok(typeof ROOT.onTouchStart === 'function')
+      assert.ok(typeof ROOT.onTouchMove === 'function')
+      assert.ok(typeof ROOT.onTouchEnd === 'function')
+      assert.deepEqual(ROOT.style, {
+        position: 'absolute',
+        top: 0,
+        bottom: 0,
+        left: 0,
+        right: 0,
+        overflow: 'hidden'
+      })
+
+      const MOVE = a('MOVE')
+      assert.ok(Object.keys(MOVE).length === 2)
+      assert.ok(typeof MOVE.onTransitionEnd === 'function')
+      assert.deepEqual(MOVE.style, {
+        width: '100%',
+        height: '100%',
+        transitionProperty: '-webkit-transform,transform',
+        MozTransitionProperty: 'transform',
+        WebkitTransitionProperty: '-webkit-transform,transform'
+      })
+
+      const WRAP = a('WRAP')
+      assert.ok(Object.keys(WRAP).length === 1)
+      assert.deepEqual(WRAP.style, {
+        height: '100%',
+        overflowScrolling: 'touch',
+        WebkitOverflowScrolling: 'touch'
+      })
+    }))
+
+  it(`props: { mountWithShut }`, () => {
+    const currentRaf = window.requestAnimationFrame
+    const raf = sinon.spy()
+
+    window.requestAnimationFrame = raf
+
+    return all({ mountWithShut: true }).then(() => {
+      assert.equal(raf.callCount, 4)
+      assert.ok(typeof raf.args[0][0] === 'function')
+      assert.ok(typeof raf.args[1][0] === 'function')
+      assert.ok(typeof raf.args[2][0] === 'function')
+      assert.ok(typeof raf.args[3][0] === 'function')
+
+      window.requestAnimationFrame = currentRaf
+    })
+  })
+
+  function all(props, cb) {
+    return Promise.all(
+      Object.values(components).map(Component => {
+        const wrapper = enzyme.mount(<Component {...props} />)
+        return typeof cb === 'function' && cb(wrapper)
+      })
+    )
   }
 })
 
-describe(`Pre.js`, () => {})
+describe(`Pre.js`, () => {
+  const Pre = require('../src/Pre.js').default
+  const touch = { pageX: 100, pageY: 100 }
 
-describe(`util.js`, () => {})
+  it(`x`, () => {
+    const pre = new Pre()
+    pre.init(touch)
+    assert.equal(pre.getX(), 100)
+    pre.setX(200)
+    assert.equal(pre.getX(), 200)
+  })
+
+  it(`y`, () => {
+    const pre = new Pre()
+    pre.init(touch)
+    assert.equal(pre.getY(), 100)
+    pre.setY(200)
+    assert.equal(pre.getY(), 200)
+  })
+
+  it(`settle`, () => {
+    const pre = new Pre()
+    pre.init(touch)
+    assert.equal(pre.getSettle(), undefined)
+    const settle = () => {}
+    pre.setSettle(settle)
+    assert.equal(pre.getSettle(), settle)
+  })
+
+  it(`now`, () => {
+    const pre = new Pre()
+    pre.init(touch)
+    const now1 = pre.getNow()
+    return lag(500).then(() => {
+      pre.setNow()
+      assert.ok(now1 < pre.getNow())
+    })
+  })
+
+  it(`kill`, () => {
+    const pre = new Pre()
+    pre.init(touch)
+    assert.equal(pre.active(), true)
+    pre.kill()
+    assert.equal(pre.active(), false)
+  })
+
+  describe(`notScroll`, () => {
+    // const diffY = compareY - this.state.y
+
+    it(`this.state.doneCheckScroll === true`, () => {
+      const pre = new Pre()
+      pre.init(touch)
+      pre.state.doneCheckScroll = true
+      assert.ok(pre.notScroll())
+    })
+
+    it(`diffY > 10`, () => {
+      const compareY = 111
+      const pre = new Pre()
+      pre.init(touch)
+      assert.ok(!pre.notScroll(compareY))
+    })
+
+    it(`diffY < -10`, () => {
+      const compareY = 89
+      const pre = new Pre()
+      pre.init(touch)
+      assert.ok(!pre.notScroll(compareY))
+    })
+
+    it(`!(diffY > 10) && !(diffY < -10)`, () => {
+      const compareY = 109
+      const pre = new Pre()
+      pre.init(touch)
+      assert.ok(pre.notScroll(compareY))
+    })
+  })
+})
+
+function lag(time) {
+  return new Promise(resolve => setTimeout(resolve, time))
+}
