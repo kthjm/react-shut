@@ -27,9 +27,7 @@
     "process": "run-p process:cjs process:min",
     "format": "prettier --write **/*.js package.json",
     "//copy": "flow-copy-source --verbose src dist",
-    "coverage": "run-s report codecov",
-    "report": "nyc report --reporter=lcov",
-    "codecov": "codecov"
+    "coverage": "nyc report --reporter=lcov && codecov"
   },
   "dependencies": {
     "atra": "^1.1.2"
