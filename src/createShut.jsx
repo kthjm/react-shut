@@ -55,7 +55,7 @@ export default (seed: Seed): React$ComponentType<*> =>
         transform: unique.transform,
         transitionDuration: unique.transitionDuration,
         background: () => this.props.background || BACKGROUND,
-        overflowY: () => this.state.value === 0 ? 'scroll' : 'hidden'
+        overflowY: () => !this.props.notScroll && this.state.value === 0 ? 'scroll' : 'hidden'
       }
     }
 
@@ -140,12 +140,13 @@ type Props = {
   children: React$Node,
   mountWithShut?: boolean,
   Quit?: () => React$Node,
-  onCome?: (e: SyntheticTransitionEvent<HTMLDivElement>) => void,
-  onQuit?: (e: SyntheticTransitionEvent<HTMLDivElement>) => void,
+  onQuitEnd?: (e: SyntheticTransitionEvent<HTMLDivElement>) => void,
+  onQuitEnd?: (e: SyntheticTransitionEvent<HTMLDivElement>) => void,
   background?: string,
-  duration?: string,
+  duration?: number,
   touchRatio?: number,
-  quitRatio?: number
+  quitRatio?: number,
+  notScroll?: boolean
 }
 
 type Atra$Result = (name: string, opts: any) => any

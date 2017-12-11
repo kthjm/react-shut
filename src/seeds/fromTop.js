@@ -55,7 +55,7 @@ const seed: Seed = react => ({
 
   transitionDuration: () =>
     (react.state.value === 0 || react.state.value === -react.nowRootSize) &&
-    (react.props.duration || DURATION)
+    `${react.props.duration || DURATION}s`
 })
 
 export default seed
