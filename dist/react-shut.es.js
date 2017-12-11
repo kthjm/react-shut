@@ -79,6 +79,7 @@ var possibleConstructorReturn = function(self, call) {
 var now = function now() {
   return Date.now()
 }
+var FORCE_DIFF = 26
 
 var Pre = (function() {
   function Pre() {
@@ -150,7 +151,13 @@ var Pre = (function() {
     {
       key: 'getSettle',
       value: function getSettle() {
-        return this.state.settle
+        var settle = this.state.settle
+
+        return (
+          now() - this.getNow() < FORCE_DIFF &&
+          typeof settle === 'function' &&
+          settle
+        )
       }
     },
     {
@@ -177,7 +184,7 @@ var Pre = (function() {
 
 //
 var BACKGROUND = 'rgb(251, 251, 251)'
-var DURATION = '0.4s'
+var DURATION = 0.4
 var TOUCH_RATIO = 0.4
 var QUIT_RATIO = 0.6
 
@@ -208,10 +215,7 @@ var createOnTouchEnd = function createOnTouchEnd(react, quitCondition) {
 
     if (pre.active()) {
       var settle =
-        Date.now() - pre.getNow() < 26
-          ? pre.getSettle()
-          : quitCondition() ? react.quit : react.come
-
+        pre.getSettle() || (quitCondition() ? react.quit : react.come)
       settle()
       pre.kill()
     }
@@ -224,8 +228,8 @@ var createOnTransitionEnd = function createOnTransitionEnd(react, onComeKey) {
     if (e.target === e.currentTarget) {
       var onCuit =
         e.currentTarget.style.transform === onComeKey
-          ? react.props.onCome
-          : react.props.onQuit
+          ? react.props.onComeEnd
+          : react.props.onQuitEnd
 
       return onCuit && isFn(onCuit) && onCuit(e)
     }
@@ -283,7 +287,9 @@ var createShut = function(seed) {
           return _this.props.background || BACKGROUND
         },
         overflowY: function overflowY() {
-          return _this.state.value === 0 ? 'scroll' : 'hidden'
+          return !_this.props.notScroll && _this.state.value === 0
+            ? 'scroll'
+            : 'hidden'
         }
       }
       return _this
@@ -447,7 +453,7 @@ var seed = function seed(react) {
     transitionDuration: function transitionDuration() {
       return (
         (react.state.value === 0 || react.state.value === react.nowRootSize) &&
-        (react.props.duration || DURATION)
+        (react.props.duration || DURATION) + 's'
       )
     }
   }
@@ -508,7 +514,7 @@ var seed$1 = function seed(react) {
     transitionDuration: function transitionDuration() {
       return (
         (react.state.value === 0 || react.state.value === -react.nowRootSize) &&
-        (react.props.duration || DURATION)
+        (react.props.duration || DURATION) + 's'
       )
     }
   }
@@ -569,7 +575,7 @@ var seed$2 = function seed(react) {
     transitionDuration: function transitionDuration() {
       return (
         (react.state.value === 0 || react.state.value === react.nowRootSize) &&
-        (react.props.duration || DURATION)
+        (react.props.duration || DURATION) + 's'
       )
     }
   }
@@ -630,7 +636,7 @@ var seed$3 = function seed(react) {
     transitionDuration: function transitionDuration() {
       return (
         (react.state.value === 0 || react.state.value === -react.nowRootSize) &&
-        (react.props.duration || DURATION)
+        (react.props.duration || DURATION) + 's'
       )
     }
   }

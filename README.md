@@ -10,43 +10,62 @@ easy covering layer that moved by touching.
 [**demo**](https://react-shut.netlify.com/)
 
 ## Installation
+
 ```shell
 yarn add react-shut
 ```
+
 ## Usage
+
 ```js
 import { ShutFromRight } from 'react-shut'
 
-export default (props) =>
-  <ShutFromRight {...{
-    mountWithShut: true,
-    Quit: (props) => <div onClick={props.fn} />,
-    onCome: () => {},
-    onQuit: () => {},
-    background: "#485736",
-    duration: "2s",
-    touchRatio: 0.2,
-    quitRatio: 0.8
-  }}>
+export default props => (
+  <ShutFromRight
+    {...{
+      mountWithShut: true,
+      Quit: props => <div onClick={props.fn} />,
+      onComeEnd: () => {},
+      onQuitEnd: () => {},
+      background: '#485736',
+      duration: 2,
+      touchRatio: 0.2,
+      quitRatio: 0.8,
+      notScroll: true
+    }}
+  >
     {props.children}
   </ShutFromRight>
+)
 ```
 
 ## Components
-- `ShutFromTop`
-- `ShutFromBottom`
-- `ShutFromLeft`
-- `ShutFromRight`
+
+* `ShutFromTop`
+* `ShutFromBottom`
+* `ShutFromLeft`
+* `ShutFromRight`
 
 ## Props
-- `mountWithShut`
-- `Quit`
-- `onCome`
-- `onQuit`
-- `background`
-- `duration`
-- `touchRatio`
-- `quitRatio`
+
+##### `mountWithShut: boolean`
+
+##### `Quit: React$Component`
+
+##### `onComeEnd: (SyntheticTransitionEvent<HTMLDivElement>)`
+
+##### `onQuitEnd: (SyntheticTransitionEvent<HTMLDivElement>)`
+
+##### `background: string`
+
+##### `duration: number`
+
+##### `touchRatio: number`
+
+##### `quitRatio: number`
+
+##### `notScroll: boolean`
 
 ## License
+
 MIT (http://opensource.org/licenses/MIT)

@@ -408,6 +408,8 @@ describe(`onTouchMove`, () => {
 })
 
 describe(`onTouchEnd`, () => {
+  const Pre = require('../src/Pre.js').default
+
   describe(`(!pre.active())`, () => {
     it(`fromBottom`, () => test(seedFromBottom))
     it(`fromLeft`, () => test(seedFromLeft))
@@ -415,87 +417,99 @@ describe(`onTouchEnd`, () => {
     it(`fromTop`, () => test(seedFromTop))
 
     function test(seed) {
-      const { onTouchEnd } = seed({ pre: { active: () => false } })
+      const pre = new Pre()
+      sinon.stub(pre, 'active').returns(false)
+      const { onTouchEnd } = seed({ pre })
       assert.equal(onTouchEnd(), undefined)
+      assert.ok(pre.active.calledOnce)
     }
   })
 
-  describe(`Date.now() - pre.getNow() < 26 ? pre.getSettle()`, () => {
+  describe(`const settle = pre.getSettle()`, () => {
     it(`fromBottom`, () => test(seedFromBottom))
     it(`fromLeft`, () => test(seedFromLeft))
     it(`fromRight`, () => test(seedFromRight))
     it(`fromTop`, () => test(seedFromTop))
 
     function test(seed) {
-      const settle = sinon.spy()
-      const react = {
-        pre: {
-          getSettle: sinon.stub().returns(settle),
-          kill: sinon.spy(),
-          getNow: () => Date.now() + 1000,
-          active: () => true
-        }
-      }
+      const pre = new Pre()
+      sinon.stub(pre, 'active').returns(true)
+      sinon.stub(pre, 'getNow').returns(Date.now())
+      sinon.spy(pre, 'kill')
 
+      const settle = sinon.spy()
+      pre.state = {}
+      pre.setSettle(settle)
+
+      const react = { pre }
       const { onTouchEnd } = seed(react)
+
       onTouchEnd()
-      assert.ok(react.pre.getSettle.calledOnce)
+
       assert.ok(settle.calledOnce)
-      assert.ok(react.pre.kill.calledOnce)
+      assert.ok(pre.kill.calledOnce)
     }
   })
 
-  describe(`Date.now() - pre.getNow() < 26 : quitCondition() ? quit`, () => {
+  describe(`const settle = !getSettle() && quitCondition() ? react.quit`, () => {
     it(`fromBottom`, () => test(seedFromBottom, 501))
     it(`fromLeft`, () => test(seedFromLeft, -501))
     it(`fromRight`, () => test(seedFromRight, 501))
     it(`fromTop`, () => test(seedFromTop, -501))
 
     function test(seed, value) {
+      const pre = new Pre()
+      sinon.stub(pre, 'active').returns(true)
+      sinon.stub(pre, 'getSettle').returns(false)
+      sinon.spy(pre, 'kill')
+
       const react = {
+        pre,
+        // reactionField === 1000 * 0.5 => 500
         nowRootSize: 1000,
         props: { quitRatio: 0.5 },
-        // reactionField === 500
         state: { value },
-        pre: {
-          kill: sinon.spy(),
-          getNow: () => Date.now() - 27,
-          active: () => true
-        },
         quit: sinon.spy()
       }
 
       const { onTouchEnd } = seed(react)
+
       onTouchEnd()
-      assert.ok(react.pre.kill.calledOnce)
+
+      assert.ok(pre.getSettle.calledOnce)
       assert.ok(react.quit.calledOnce)
+      assert.ok(pre.kill.calledOnce)
     }
   })
 
-  describe(`Date.now() - pre.getNow() < 26 : quitCondition() : come`, () => {
+  describe(`const settle = !getSettle() && quitCondition() : react.come`, () => {
     it(`fromBottom`, () => test(seedFromBottom, 500))
     it(`fromLeft`, () => test(seedFromLeft, -500))
     it(`fromRight`, () => test(seedFromRight, 500))
     it(`fromTop`, () => test(seedFromTop, -500))
 
     function test(seed, value) {
+      const pre = new Pre()
+      sinon.stub(pre, 'active').returns(true)
+      sinon.stub(pre, 'getSettle').returns(false)
+      sinon.spy(pre, 'kill')
+
       const react = {
+        pre,
+        // reactionField === 1000 * 0.5 => 500
         nowRootSize: 1000,
         props: { quitRatio: 0.5 },
-        // reactionField === 500
         state: { value },
-        pre: {
-          kill: sinon.spy(),
-          getNow: () => Date.now() - 27,
-          active: () => true
-        },
         come: sinon.spy()
       }
 
       const { onTouchEnd } = seed(react)
+
       onTouchEnd()
-      assert.ok(react.pre.kill.calledOnce)
+
+      assert.ok(pre.getSettle.calledOnce)
       assert.ok(react.come.calledOnce)
+      assert.ok(pre.kill.calledOnce)
     }
   })
 })
@@ -516,15 +530,15 @@ describe(`onTransitionEnd`, () => {
     }
   })
 
-  describe(`e.target === e.currentTarget: !onQuit`, () => {
-    it(`fromBottom: onCome`, () => test(seedFromBottom))
-    it(`fromLeft: onCome`, () => test(seedFromLeft))
-    it(`fromRight: onCome`, () => test(seedFromRight))
-    it(`fromTop: onCome`, () => test(seedFromTop))
+  describe(`e.target === e.currentTarget: !onQuitEnd`, () => {
+    it(`fromBottom: onComeEnd`, () => test(seedFromBottom))
+    it(`fromLeft: onComeEnd`, () => test(seedFromLeft))
+    it(`fromRight: onComeEnd`, () => test(seedFromRight))
+    it(`fromTop: onComeEnd`, () => test(seedFromTop))
 
     function test(seed, transform) {
-      const onQuit = undefined
-      const react = { props: { onQuit } }
+      const onQuitEnd = undefined
+      const react = { props: { onQuitEnd } }
       const { onTransitionEnd } = seed(react)
 
       const element = { style: { transform: 'translateZ(0px)' } }
@@ -533,15 +547,15 @@ describe(`onTransitionEnd`, () => {
     }
   })
 
-  describe(`e.target === e.currentTarget: !isFn(onQuit)`, () => {
-    it(`fromBottom: onCome`, () => test(seedFromBottom))
-    it(`fromLeft: onCome`, () => test(seedFromLeft))
-    it(`fromRight: onCome`, () => test(seedFromRight))
-    it(`fromTop: onCome`, () => test(seedFromTop))
+  describe(`e.target === e.currentTarget: !isFn(onQuitEnd)`, () => {
+    it(`fromBottom: onComeEnd`, () => test(seedFromBottom))
+    it(`fromLeft: onComeEnd`, () => test(seedFromLeft))
+    it(`fromRight: onComeEnd`, () => test(seedFromRight))
+    it(`fromTop: onComeEnd`, () => test(seedFromTop))
 
     function test(seed, transform) {
-      const onQuit = {}
-      const react = { props: { onQuit } }
+      const onQuitEnd = {}
+      const react = { props: { onQuitEnd } }
       const { onTransitionEnd } = seed(react)
 
       const element = { style: { transform: 'translateZ(0px)' } }
@@ -550,22 +564,22 @@ describe(`onTransitionEnd`, () => {
     }
   })
 
-  describe(`e.target === e.currentTarget: onCome`, () => {
-    it(`fromBottom: onCome`, () => test(seedFromBottom, 'translateY(0px)'))
-    it(`fromLeft: onCome`, () => test(seedFromLeft, 'translateX(0px)'))
-    it(`fromRight: onCome`, () => test(seedFromRight, 'translateX(0px)'))
-    it(`fromTop: onCome`, () => test(seedFromTop, 'translateY(0px)'))
+  describe(`e.target === e.currentTarget: onComeEnd`, () => {
+    it(`fromBottom: onComeEnd`, () => test(seedFromBottom, 'translateY(0px)'))
+    it(`fromLeft: onComeEnd`, () => test(seedFromLeft, 'translateX(0px)'))
+    it(`fromRight: onComeEnd`, () => test(seedFromRight, 'translateX(0px)'))
+    it(`fromTop: onComeEnd`, () => test(seedFromTop, 'translateY(0px)'))
 
     function test(seed, transform) {
-      const onCome = sinon.stub()
-      const react = { props: { onCome } }
+      const onComeEnd = sinon.stub()
+      const react = { props: { onComeEnd } }
       const { onTransitionEnd } = seed(react)
 
       const element = { style: { transform } }
       const e = { target: element, currentTarget: element }
       onTransitionEnd(e)
-      assert.ok(onCome.calledOnce)
-      assert.deepStrictEqual(onCome.args[0][0], e)
+      assert.ok(onComeEnd.calledOnce)
+      assert.deepStrictEqual(onComeEnd.args[0][0], e)
     }
   })
 })

@@ -73,6 +73,11 @@ describe(`components`, () => {
     })
   })
 
+  it(`!props.scroll`, () =>
+    all({ notScroll: true }, wrapper =>
+      assert.equal(wrapper.instance().renders.overflowY(), 'hidden')
+    ))
+
   function all(props, cb) {
     return Promise.all(
       Object.values(components).map(Component => {
@@ -106,7 +111,7 @@ describe(`Pre.js`, () => {
   it(`settle`, () => {
     const pre = new Pre()
     pre.init(touch)
-    assert.equal(pre.getSettle(), undefined)
+    assert.equal(pre.getSettle(), false)
     const settle = () => {}
     pre.setSettle(settle)
     assert.equal(pre.getSettle(), settle)

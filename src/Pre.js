@@ -10,6 +10,7 @@ type Pre$State = {
 }
 
 const now = (): number => Date.now()
+const FORCE_DIFF = 26
 
 export default class Pre {
   state: any | Pre$State
@@ -57,7 +58,12 @@ export default class Pre {
     this.state.settle = f
   }
   getSettle() {
-    return this.state.settle
+    const { settle } = this.state
+    return (
+      now() - this.getNow() < FORCE_DIFF &&
+      typeof settle === 'function' &&
+      settle
+    )
   }
 
   setNow() {

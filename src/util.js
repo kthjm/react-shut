@@ -7,7 +7,7 @@ import {
 } from './type.js'
 
 export const BACKGROUND = 'rgb(251, 251, 251)'
-export const DURATION = '0.4s'
+export const DURATION = 0.4
 export const TOUCH_RATIO = 0.4
 export const QUIT_RATIO = 0.6
 
@@ -34,10 +34,7 @@ export const createOnTouchEnd = (
 
   if (pre.active()) {
     const settle =
-      Date.now() - pre.getNow() < 26
-        ? pre.getSettle()
-        : quitCondition() ? react.quit : react.come
-
+      pre.getSettle() || (quitCondition() ? react.quit : react.come)
     settle()
     pre.kill()
   }
@@ -51,8 +48,8 @@ export const createOnTransitionEnd = (
   if (e.target === e.currentTarget) {
     const onCuit =
       e.currentTarget.style.transform === onComeKey
-        ? react.props.onCome
-        : react.props.onQuit
+        ? react.props.onComeEnd
+        : react.props.onQuitEnd
 
     return onCuit && isFn(onCuit) && onCuit(e)
   }
