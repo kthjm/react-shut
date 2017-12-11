@@ -18,10 +18,10 @@ yarn add react-shut
 ## Usage
 
 ```js
-import { ShutFromRight } from 'react-shut'
+import { ShutFromRight as Shut } from 'react-shut'
 
 export default props => (
-  <ShutFromRight
+  <Shut
     {...{
       mountWithShut: true,
       Quit: props => <div onClick={props.fn} />,
@@ -35,7 +35,7 @@ export default props => (
     }}
   >
     {props.children}
-  </ShutFromRight>
+  </Shut>
 )
 ```
 
