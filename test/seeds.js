@@ -44,22 +44,7 @@ describe(`rootRef`, () => {
       const { rootRef } = seed(react)
       const targets = [undefined, false, null]
       targets.forEach(target => rootRef(target))
-      assert.equal(react.rootSize, undefined)
-    }
-  })
-
-  describe(`react.rootSize === true`, () => {
-    it(`fromBottom`, () => test(seedFromBottom))
-    it(`fromLeft`, () => test(seedFromLeft))
-    it(`fromRight`, () => test(seedFromRight))
-    it(`fromTop`, () => test(seedFromTop))
-
-    function test(seed) {
-      const react = { rootSize: () => {} }
-      const { rootSize } = react
-      const { rootRef } = seed(react)
-      rootRef({ clientWidth: 1000, clientHeight: 1000 })
-      assert.deepStrictEqual(react.rootSize, rootSize)
+      assert.equal(react.getRootSize, undefined)
     }
   })
 
@@ -73,7 +58,8 @@ describe(`rootRef`, () => {
       const react = {}
       const { rootRef } = seed(react)
       rootRef({ clientWidth: 1000, clientHeight: 1000 })
-      assert.ok(typeof react.rootSize === 'function')
+      assert.ok(typeof react.getRootSize === 'function')
+      assert.ok(typeof react.getRootWidth === 'function')
     }
   })
 })
@@ -560,7 +546,7 @@ describe(`onTransitionEnd`, () => {
 
       const element = { style: { transform: 'translateZ(0px)' } }
       const e = { target: element, currentTarget: element }
-      assert.equal(onTransitionEnd(e), false)
+      assert.equal(onTransitionEnd(e), undefined)
     }
   })
 

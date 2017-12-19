@@ -1,7 +1,8 @@
 // @flow
 import {
   type RootRef,
-  type RootSize,
+  type GetRootSize,
+  type GetRootWidth,
   type OnTouchEnd,
   type OnTransitionEnd
 } from './type.js'
@@ -13,16 +14,19 @@ export const QUIT_RATIO = 0.6
 
 export const winnerWidth = (): number => window.innerWidth
 export const winnerHeight = (): number => window.innerHeight
-export const isFn = (target: any): boolean => typeof target === 'function'
+export const isFnc = (target: any): boolean => typeof target === 'function'
+export const isNum = (target: any): boolean => typeof target === 'number'
 
 export const createRootRef = (
   react: *,
   key: 'clientWidth' | 'clientHeight'
 ): RootRef =>
   function(target) {
-    if (target && !react.rootSize) {
-      const rootSize: RootSize = () => target[key]
-      react.rootSize = rootSize
+    if (target) {
+      const getRootSize: GetRootSize = () => target[key]
+      const getRootWidth: GetRootWidth = () => target.clientWidth
+      react.getRootSize = getRootSize
+      react.getRootWidth = getRootWidth
     }
   }
 
@@ -43,14 +47,17 @@ export const createOnTouchEnd = (
 export const createOnTransitionEnd = (
   react: *,
   onComeKey: 'translateX(0px)' | 'translateY(0px)'
-): OnTransitionEnd => e => {
-  ;(e.currentTarget: HTMLDivElement)
-  if (e.target === e.currentTarget) {
+): OnTransitionEnd => (e, persisted) => {
+  if (persisted || e.target === e.currentTarget) {
+    const target: HTMLDivElement = e.currentTarget || e.target
+
     const onCuit =
-      e.currentTarget.style.transform === onComeKey
+      target.style.transform === onComeKey
         ? react.props.onComeEnd
         : react.props.onQuitEnd
 
-    return onCuit && isFn(onCuit) && onCuit(e)
+    if (onCuit && isFnc(onCuit)) {
+      onCuit(e)
+    }
   }
 }

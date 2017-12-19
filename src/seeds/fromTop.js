@@ -6,7 +6,8 @@ import {
   winnerHeight,
   createRootRef,
   createOnTouchEnd,
-  createOnTransitionEnd
+  createOnTransitionEnd,
+  isNum
 } from '../util.js'
 import { type Seed } from '../type.js'
 
@@ -18,8 +19,9 @@ const seed: Seed = react => ({
   quit: () => react.setState({ value: -react.nowRootSize }),
 
   canInit: touches => {
-    const touchRatio = react.props.touchRatio || TOUCH_RATIO
-    const reactionField = winnerHeight() * (1 - touchRatio)
+    const { touchRatio } = react.props
+    const ratio = isNum(touchRatio) ? touchRatio : TOUCH_RATIO
+    const reactionField = winnerHeight() * (1 - ratio)
     return touches.length === 1 && touches[0].pageY > reactionField
   },
 
@@ -45,8 +47,9 @@ const seed: Seed = react => ({
   onTouchEnd: createOnTouchEnd(react, () => {
     const { nowRootSize } = react
     const { value } = react.state
-    const quitRatio = react.props.quitRatio || QUIT_RATIO
-    return value < -(nowRootSize * quitRatio)
+    const { quitRatio } = react.props
+    const ratio = isNum(quitRatio) ? quitRatio : QUIT_RATIO
+    return value < -(nowRootSize * ratio)
   }),
 
   onTransitionEnd: createOnTransitionEnd(react, 'translateY(0px)'),
@@ -55,7 +58,7 @@ const seed: Seed = react => ({
 
   transitionDuration: () =>
     (react.state.value === 0 || react.state.value === -react.nowRootSize) &&
-    `${react.props.duration || DURATION}s`
+    `${isNum(react.props.duration) ? react.props.duration : DURATION}s`
 })
 
 export default seed

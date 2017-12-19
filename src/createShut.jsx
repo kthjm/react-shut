@@ -2,7 +2,7 @@
 import React from 'react'
 import Atra from 'atra'
 import Pre from './Pre.js'
-import { BACKGROUND, isFn } from './util.js'
+import { BACKGROUND, isFnc, isNum } from './util.js'
 import {
   type Seed,
   type Transform,
@@ -10,19 +10,23 @@ import {
   type Come,
   type Quit,
   type CanInit,
-  type RootSize
+  type GetRootSize,
+  type GetRootWidth
 } from './type.js'
 
+const SCROLL_BAR = 17
 const raf = (fn: () => void) => window.requestAnimationFrame(fn)
 
 export default (seed: Seed): React$ComponentType<*> =>
   class Shut extends React.Component<Props,State> {
     nowRootSize: number
+    mountWithHidden: boolean
     pre: Pre
     come: Come
     quit: Quit
     canInit: CanInit
-    rootSize: RootSize
+    getRootSize: GetRootSize
+    getRootWidth: GetRootWidth
     a: Atra$Result
     renders: Renders
 
@@ -33,8 +37,12 @@ export default (seed: Seed): React$ComponentType<*> =>
 
       // state
       this.nowRootSize = unique.firstRootSize
-      this.state = { value: props.mountWithShut ? this.nowRootSize : 0 }
+      this.mountWithHidden = props.mountWithShut && props.hiddenBar
       this.pre = new Pre()
+      this.state = {
+        rootWidth: undefined,
+        value: props.mountWithShut ? this.nowRootSize : 0
+      }
 
       // core
       this.come = () => this.setState({ value: 0 })
@@ -44,10 +52,24 @@ export default (seed: Seed): React$ComponentType<*> =>
       // a
       this.a = A({
         ref: unique.rootRef,
-        onTouchStart: ({ touches }) => this.canInit(touches) && this.pre.init(touches[0]),
+        onTouchStartCapture: (e) => {
+          const { touches } = e
+          if(this.canInit(touches)){
+            e.stopPropagation()
+            this.pre.init(touches[0])
+          }
+        },
         onTouchMove: unique.onTouchMove,
         onTouchEnd: unique.onTouchEnd,
-        onTransitionEnd: unique.onTransitionEnd
+        onTransitionEnd: (e) => {
+          if(this.mountWithHidden){
+            e.persist()
+            this.mountWithHidden = false
+            this.forceUpdate(() => unique.onTransitionEnd(e, true))
+          }else{
+            unique.onTransitionEnd(e)
+          }
+        }
       })
 
       // render
@@ -55,7 +77,11 @@ export default (seed: Seed): React$ComponentType<*> =>
         transform: unique.transform,
         transitionDuration: unique.transitionDuration,
         background: () => this.props.background || BACKGROUND,
-        overflowY: () => !this.props.notScroll && this.state.value === 0 ? 'scroll' : 'hidden'
+        overflowY: () => (
+          !this.mountWithHidden && !this.props.notScroll && this.state.value === 0
+            ? 'scroll'
+            : 'hidden'
+        )
       }
     }
 
@@ -66,10 +92,15 @@ export default (seed: Seed): React$ComponentType<*> =>
       const background = this.renders.background()
       const overflowY = this.renders.overflowY()
 
+      const { rootWidth } = this.state
+      const width = (isNum(rootWidth) && this.props.hiddenBar && overflowY === 'scroll')
+        ? rootWidth + SCROLL_BAR
+        : '100%'
+
       return (
         <div {...a('ROOT')}>
           <div {...a('MOVE', { style: { transform, transitionDuration, background } })}>
-            <div {...a('WRAP', { style: { overflowY } })}>
+            <div {...a('WRAP', { style: { overflowY, width } })}>
               {this.props.children}
             </div>
             {this.createQuit()}
@@ -78,34 +109,40 @@ export default (seed: Seed): React$ComponentType<*> =>
       )
     }
 
+    setRootSize() {
+      this.nowRootSize = this.getRootSize()
+    }
+
     componentDidMount() {
-      this.nowRootSize = this.rootSize()
-      return this.props.mountWithShut && raf(this.come)
+      this.setRootSize()
+
+      const value = this.props.mountWithShut ? 0 : this.state.value
+      const rootWidth = this.getRootWidth()
+      return raf(() => this.setState({ rootWidth, value }))
     }
 
     componentDidUpdate() {
-      const rootSize = this.rootSize()
-      if (rootSize !== this.nowRootSize) {
-        this.nowRootSize = rootSize
-      }
+      this.setRootSize()
+      const rootWidth = this.getRootWidth()
+      return rootWidth !== this.state.rootWidth && this.setState({ rootWidth })
     }
 
     createQuit() {
       const { Quit } = this.props
-      return Quit && isFn(Quit) && <Quit fn={this.quit} />
+      return Quit && isFnc(Quit) && <Quit fn={this.quit} />
     }
   }
 
 const A = ({
   ref,
-  onTouchStart,
+  onTouchStartCapture,
   onTouchMove,
   onTouchEnd,
   onTransitionEnd
 }) => Atra({
   ROOT: {
     ref,
-    onTouchStart,
+    onTouchStartCapture,
     onTouchMove,
     onTouchEnd,
     style: {
@@ -134,7 +171,10 @@ const A = ({
   }
 })
 
-type State = { value: number }
+type State = {
+  rootWidth: void | number,
+  value: number
+}
 
 type Props = {
   children: React$Node,
@@ -146,7 +186,8 @@ type Props = {
   duration?: number,
   touchRatio?: number,
   quitRatio?: number,
-  notScroll?: boolean
+  notScroll?: boolean,
+  hiddenBar?: boolean
 }
 
 type Atra$Result = (name: string, opts: any) => any
