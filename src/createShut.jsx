@@ -87,7 +87,7 @@ export default (seed: Seed): React$ComponentType<*> =>
       const overflowY = this.renders.overflowY()
 
       const { rootWidth } = this.state
-      const width = (isNum(rootWidth) && this.props.hiddenBar && overflowY === 'scroll')
+      const width = (isNum(rootWidth) && overflowY === 'scroll' && this.props.hiddenBar)
         ? rootWidth + SCROLL_BAR
         : '100%'
 

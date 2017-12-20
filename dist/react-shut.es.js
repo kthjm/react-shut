@@ -292,7 +292,7 @@ var createShut = function(seed) {
           var rootWidth = this.state.rootWidth
 
           var width =
-            isNum(rootWidth) && this.props.hiddenBar && overflowY === 'scroll'
+            isNum(rootWidth) && overflowY === 'scroll' && this.props.hiddenBar
               ? rootWidth + SCROLL_BAR
               : '100%'
 
