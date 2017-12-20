@@ -31,7 +31,8 @@ export default props => (
       duration: 2,
       touchRatio: 0.2,
       quitRatio: 0.8,
-      notScroll: true
+      notScroll: true,
+      hiddenBar: true
     }}
   >
     {props.children}
@@ -65,6 +66,8 @@ export default props => (
 ##### `quitRatio: number`
 
 ##### `notScroll: boolean`
+
+##### `hiddenBar: boolean`
 
 ## License
 

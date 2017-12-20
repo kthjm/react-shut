@@ -1,4 +1,5 @@
 // @flow
+import { isFnc } from './util.js'
 import { type Come, type Quit } from './type.js'
 
 type Pre$State = {
@@ -15,10 +16,6 @@ const FORCE_DIFF = 26
 export default class Pre {
   state: any | Pre$State
 
-  active() {
-    return Boolean(this.state) && typeof this.state === 'object'
-  }
-
   init(touch: Touch) {
     this.state = {
       now: now(),
@@ -27,6 +24,10 @@ export default class Pre {
       doneCheckScroll: false,
       settle: undefined
     }
+  }
+
+  canMove() {
+    return Boolean(this.state) && typeof this.state === 'object'
   }
 
   notScroll(compareY: number) {
@@ -38,6 +39,10 @@ export default class Pre {
       this.state.doneCheckScroll = true
     }
     return true
+  }
+
+  canEnd() {
+    return this.canMove() && isFnc(this.state.settle)
   }
 
   setX(x: number) {

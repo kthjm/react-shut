@@ -52,16 +52,10 @@ export default (seed: Seed): React$ComponentType<*> =>
       // a
       this.a = A({
         ref: unique.rootRef,
-        onTouchStartCapture: (e) => {
-          const { touches } = e
-          if(this.canInit(touches)){
-            e.stopPropagation()
-            this.pre.init(touches[0])
-          }
-        },
-        onTouchMove: unique.onTouchMove,
-        onTouchEnd: unique.onTouchEnd,
-        onTransitionEnd: (e) => {
+        onTouchStartCapture: ({ touches }) => this.canInit(touches) && this.pre.init(touches[0]),
+        onTouchMoveCapture: unique.onTouchMoveCapture,
+        onTouchEndCapture: unique.onTouchEndCapture,
+        onTransitionEnd: !this.mountWithHidden ? unique.onTransitionEnd : (e) => {
           if(this.mountWithHidden){
             e.persist()
             this.mountWithHidden = false
@@ -115,7 +109,6 @@ export default (seed: Seed): React$ComponentType<*> =>
 
     componentDidMount() {
       this.setRootSize()
-
       const value = this.props.mountWithShut ? 0 : this.state.value
       const rootWidth = this.getRootWidth()
       return raf(() => this.setState({ rootWidth, value }))
@@ -136,15 +129,15 @@ export default (seed: Seed): React$ComponentType<*> =>
 const A = ({
   ref,
   onTouchStartCapture,
-  onTouchMove,
-  onTouchEnd,
+  onTouchMoveCapture,
+  onTouchEndCapture,
   onTransitionEnd
 }) => Atra({
   ROOT: {
     ref,
     onTouchStartCapture,
-    onTouchMove,
-    onTouchEnd,
+    onTouchMoveCapture,
+    onTouchEndCapture,
     style: {
       position: 'absolute',
       top: 0,

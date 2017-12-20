@@ -29,8 +29,8 @@ describe(`components`, () => {
       assert.ok(Object.keys(ROOT).length === 5)
       assert.ok(typeof ROOT.ref === 'function')
       assert.ok(typeof ROOT.onTouchStartCapture === 'function')
-      assert.ok(typeof ROOT.onTouchMove === 'function')
-      assert.ok(typeof ROOT.onTouchEnd === 'function')
+      assert.ok(typeof ROOT.onTouchMoveCapture === 'function')
+      assert.ok(typeof ROOT.onTouchEndCapture === 'function')
       assert.deepEqual(ROOT.style, {
         position: 'absolute',
         top: 0,
@@ -143,9 +143,9 @@ describe(`Pre.js`, () => {
   it(`kill`, () => {
     const pre = new Pre()
     pre.init(touch)
-    assert.equal(pre.active(), true)
+    assert.equal(pre.canMove(), true)
     pre.kill()
-    assert.equal(pre.active(), false)
+    assert.equal(pre.canMove(), false)
   })
 
   describe(`notScroll`, () => {

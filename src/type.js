@@ -6,8 +6,8 @@ export type GetRootWidth = () => number
 export type Come = () => void
 export type Quit = () => void
 export type CanInit = (touches: Array<Touch>) => boolean
-export type OnTouchMove = (e: SyntheticTouchEvent<*>) => void | false
-export type OnTouchEnd = (e: SyntheticTouchEvent<*>) => void
+export type OnTouchMoveCapture = (e: SyntheticTouchEvent<*>) => void | false
+export type OnTouchEndCapture = (e: SyntheticTouchEvent<*>) => void
 export type OnTransitionEnd = (
   e: SyntheticTransitionEvent<HTMLDivElement>,
   persisted?: boolean
@@ -20,8 +20,8 @@ type Unique = {
   rootRef: RootRef,
   quit: Quit,
   canInit: CanInit,
-  onTouchMove: OnTouchMove,
-  onTouchEnd: OnTouchEnd,
+  onTouchMoveCapture: OnTouchMoveCapture,
+  onTouchEndCapture: OnTouchEndCapture,
   onTransitionEnd: OnTransitionEnd,
   transform: Transform,
   transitionDuration: TransitionDuration
