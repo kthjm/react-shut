@@ -5,7 +5,7 @@ import {
   seedFromLeft,
   seedFromRight,
   seedFromTop
-} from '../src/seeds'
+} from '../src/seeds.js'
 
 describe(`firstRootSize`, () => {
   const createReact = () => ({})
@@ -44,22 +44,7 @@ describe(`rootRef`, () => {
       const { rootRef } = seed(react)
       const targets = [undefined, false, null]
       targets.forEach(target => rootRef(target))
-      assert.equal(react.rootSize, undefined)
-    }
-  })
-
-  describe(`react.rootSize === true`, () => {
-    it(`fromBottom`, () => test(seedFromBottom))
-    it(`fromLeft`, () => test(seedFromLeft))
-    it(`fromRight`, () => test(seedFromRight))
-    it(`fromTop`, () => test(seedFromTop))
-
-    function test(seed) {
-      const react = { rootSize: () => {} }
-      const { rootSize } = react
-      const { rootRef } = seed(react)
-      rootRef({ clientWidth: 1000, clientHeight: 1000 })
-      assert.deepStrictEqual(react.rootSize, rootSize)
+      assert.equal(react.getRootSize, undefined)
     }
   })
 
@@ -73,7 +58,8 @@ describe(`rootRef`, () => {
       const react = {}
       const { rootRef } = seed(react)
       rootRef({ clientWidth: 1000, clientHeight: 1000 })
-      assert.ok(typeof react.rootSize === 'function')
+      assert.ok(typeof react.getRootSize === 'function')
+      assert.ok(typeof react.getRootWidth === 'function')
     }
   })
 })
@@ -141,7 +127,7 @@ describe(`canInit`, () => {
   })
 })
 
-describe(`onTouchMove`, () => {
+describe(`onTouchMoveCapture`, () => {
   describe(`if(false)`, () => {
     const e = { touches: [{}] }
 
@@ -152,12 +138,12 @@ describe(`onTouchMove`, () => {
       it(`fromTop`, () => test(seedFromTop))
 
       function test(seed) {
-        const active = sinon.stub().returns(false)
+        const canMove = sinon.stub().returns(false)
         const notScroll = sinon.stub().returns(true)
-        const react = { pre: { active, notScroll } }
-        const { onTouchMove } = seed(react)
-        onTouchMove(e)
-        assert.ok(active.calledOnce)
+        const react = { pre: { canMove, notScroll } }
+        const { onTouchMoveCapture } = seed(react)
+        onTouchMoveCapture(e)
+        assert.ok(canMove.calledOnce)
         assert.ok(notScroll.notCalled)
       }
     })
@@ -167,12 +153,12 @@ describe(`onTouchMove`, () => {
       it(`fromRight`, () => test(seedFromRight))
 
       function test(seed) {
-        const active = sinon.stub().returns(true)
+        const canMove = sinon.stub().returns(true)
         const notScroll = sinon.stub().returns(false)
-        const react = { pre: { active, notScroll } }
-        const { onTouchMove } = seed(react)
-        const result = onTouchMove(e)
-        assert.ok(active.calledOnce)
+        const react = { pre: { canMove, notScroll } }
+        const { onTouchMoveCapture } = seed(react)
+        const result = onTouchMoveCapture(e)
+        assert.ok(canMove.calledOnce)
         assert.ok(notScroll.calledOnce)
       }
     })
@@ -187,7 +173,7 @@ describe(`onTouchMove`, () => {
       const value = 10
       const React = () => ({
         state: { value },
-        pre: { active: () => true }
+        pre: { canMove: () => true }
       })
 
       it(`fromBottom`, () => {
@@ -204,8 +190,8 @@ describe(`onTouchMove`, () => {
 
         react.setState = sinon.spy()
 
-        const { onTouchMove } = seedFromBottom(react)
-        onTouchMove(e)
+        const { onTouchMoveCapture } = seedFromBottom(react)
+        onTouchMoveCapture(e)
         assert.ok(react.setState.calledOnce)
       })
 
@@ -224,8 +210,8 @@ describe(`onTouchMove`, () => {
 
         react.setState = sinon.spy()
 
-        const { onTouchMove } = seedFromLeft(react)
-        onTouchMove(e)
+        const { onTouchMoveCapture } = seedFromLeft(react)
+        onTouchMoveCapture(e)
         assert.ok(react.setState.calledOnce)
       })
 
@@ -244,8 +230,8 @@ describe(`onTouchMove`, () => {
 
         react.setState = sinon.spy()
 
-        const { onTouchMove } = seedFromRight(react)
-        onTouchMove(e)
+        const { onTouchMoveCapture } = seedFromRight(react)
+        onTouchMoveCapture(e)
         assert.ok(react.setState.calledOnce)
       })
 
@@ -263,8 +249,8 @@ describe(`onTouchMove`, () => {
 
         react.setState = sinon.spy()
 
-        const { onTouchMove } = seedFromTop(react)
-        onTouchMove(e)
+        const { onTouchMoveCapture } = seedFromTop(react)
+        onTouchMoveCapture(e)
         assert.ok(react.setState.calledOnce)
       })
     })
@@ -277,7 +263,7 @@ describe(`onTouchMove`, () => {
       const value = 0
       const React = () => ({
         state: { value },
-        pre: { active: () => true }
+        pre: { canMove: () => true }
       })
 
       it(`fromBottom`, () => {
@@ -288,8 +274,8 @@ describe(`onTouchMove`, () => {
         react.pre.setSettle = () => {}
         react.pre.setNow = () => {}
 
-        const { onTouchMove } = seedFromBottom(react)
-        const result = onTouchMove(e)
+        const { onTouchMoveCapture } = seedFromBottom(react)
+        const result = onTouchMoveCapture(e)
         assert.equal(result, false)
       })
 
@@ -302,8 +288,8 @@ describe(`onTouchMove`, () => {
         react.pre.setSettle = () => {}
         react.pre.setNow = () => {}
 
-        const { onTouchMove } = seedFromLeft(react)
-        const result = onTouchMove(e)
+        const { onTouchMoveCapture } = seedFromLeft(react)
+        const result = onTouchMoveCapture(e)
         assert.equal(result, false)
       })
 
@@ -316,8 +302,8 @@ describe(`onTouchMove`, () => {
         react.pre.setSettle = () => {}
         react.pre.setNow = () => {}
 
-        const { onTouchMove } = seedFromRight(react)
-        const result = onTouchMove(e)
+        const { onTouchMoveCapture } = seedFromRight(react)
+        const result = onTouchMoveCapture(e)
         assert.equal(result, false)
       })
 
@@ -329,8 +315,8 @@ describe(`onTouchMove`, () => {
         react.pre.setSettle = () => {}
         react.pre.setNow = () => {}
 
-        const { onTouchMove } = seedFromTop(react)
-        const result = onTouchMove(e)
+        const { onTouchMoveCapture } = seedFromTop(react)
+        const result = onTouchMoveCapture(e)
         assert.equal(result, false)
       })
     })
@@ -343,7 +329,7 @@ describe(`onTouchMove`, () => {
       const value = 1
       const React = () => ({
         state: { value },
-        pre: { active: () => true }
+        pre: { canMove: () => true }
       })
 
       it(`fromBottom`, () => {
@@ -355,8 +341,8 @@ describe(`onTouchMove`, () => {
         react.pre.setNow = () => {}
 
         react.come = sinon.spy()
-        const { onTouchMove } = seedFromBottom(react)
-        onTouchMove(e)
+        const { onTouchMoveCapture } = seedFromBottom(react)
+        onTouchMoveCapture(e)
         assert.ok(react.come.calledOnce)
       })
 
@@ -370,8 +356,8 @@ describe(`onTouchMove`, () => {
         react.pre.setNow = () => {}
 
         react.come = sinon.spy()
-        const { onTouchMove } = seedFromLeft(react)
-        onTouchMove(e)
+        const { onTouchMoveCapture } = seedFromLeft(react)
+        onTouchMoveCapture(e)
         assert.ok(react.come.calledOnce)
       })
 
@@ -385,8 +371,8 @@ describe(`onTouchMove`, () => {
         react.pre.setNow = () => {}
 
         react.come = sinon.spy()
-        const { onTouchMove } = seedFromRight(react)
-        onTouchMove(e)
+        const { onTouchMoveCapture } = seedFromRight(react)
+        onTouchMoveCapture(e)
         assert.ok(react.come.calledOnce)
       })
 
@@ -399,18 +385,18 @@ describe(`onTouchMove`, () => {
         react.pre.setNow = () => {}
 
         react.come = sinon.spy()
-        const { onTouchMove } = seedFromTop(react)
-        onTouchMove(e)
+        const { onTouchMoveCapture } = seedFromTop(react)
+        onTouchMoveCapture(e)
         assert.ok(react.come.calledOnce)
       })
     })
   })
 })
 
-describe(`onTouchEnd`, () => {
+describe(`onTouchEndCapture`, () => {
   const Pre = require('../src/Pre.js').default
 
-  describe(`(!pre.active())`, () => {
+  describe(`(!pre.canEnd())`, () => {
     it(`fromBottom`, () => test(seedFromBottom))
     it(`fromLeft`, () => test(seedFromLeft))
     it(`fromRight`, () => test(seedFromRight))
@@ -418,10 +404,10 @@ describe(`onTouchEnd`, () => {
 
     function test(seed) {
       const pre = new Pre()
-      sinon.stub(pre, 'active').returns(false)
-      const { onTouchEnd } = seed({ pre })
-      assert.equal(onTouchEnd(), undefined)
-      assert.ok(pre.active.calledOnce)
+      sinon.stub(pre, 'canEnd').returns(false)
+      const { onTouchEndCapture } = seed({ pre })
+      assert.equal(onTouchEndCapture(), undefined)
+      assert.ok(pre.canEnd.calledOnce)
     }
   })
 
@@ -433,7 +419,7 @@ describe(`onTouchEnd`, () => {
 
     function test(seed) {
       const pre = new Pre()
-      sinon.stub(pre, 'active').returns(true)
+      sinon.stub(pre, 'canEnd').returns(true)
       sinon.stub(pre, 'getNow').returns(Date.now())
       sinon.spy(pre, 'kill')
 
@@ -442,9 +428,14 @@ describe(`onTouchEnd`, () => {
       pre.setSettle(settle)
 
       const react = { pre }
-      const { onTouchEnd } = seed(react)
+      const { onTouchEndCapture } = seed(react)
 
-      onTouchEnd()
+      const stopPropagation = sinon.spy()
+      const preventDefault = sinon.spy()
+      onTouchEndCapture({ stopPropagation, preventDefault })
+
+      assert.ok(stopPropagation.calledOnce)
+      assert.ok(preventDefault.calledOnce)
 
       assert.ok(settle.calledOnce)
       assert.ok(pre.kill.calledOnce)
@@ -459,7 +450,7 @@ describe(`onTouchEnd`, () => {
 
     function test(seed, value) {
       const pre = new Pre()
-      sinon.stub(pre, 'active').returns(true)
+      sinon.stub(pre, 'canEnd').returns(true)
       sinon.stub(pre, 'getSettle').returns(false)
       sinon.spy(pre, 'kill')
 
@@ -472,9 +463,14 @@ describe(`onTouchEnd`, () => {
         quit: sinon.spy()
       }
 
-      const { onTouchEnd } = seed(react)
+      const { onTouchEndCapture } = seed(react)
 
-      onTouchEnd()
+      const stopPropagation = sinon.spy()
+      const preventDefault = sinon.spy()
+      onTouchEndCapture({ stopPropagation, preventDefault })
+
+      assert.ok(stopPropagation.calledOnce)
+      assert.ok(preventDefault.calledOnce)
 
       assert.ok(pre.getSettle.calledOnce)
       assert.ok(react.quit.calledOnce)
@@ -490,7 +486,7 @@ describe(`onTouchEnd`, () => {
 
     function test(seed, value) {
       const pre = new Pre()
-      sinon.stub(pre, 'active').returns(true)
+      sinon.stub(pre, 'canEnd').returns(true)
       sinon.stub(pre, 'getSettle').returns(false)
       sinon.spy(pre, 'kill')
 
@@ -503,9 +499,14 @@ describe(`onTouchEnd`, () => {
         come: sinon.spy()
       }
 
-      const { onTouchEnd } = seed(react)
+      const { onTouchEndCapture } = seed(react)
 
-      onTouchEnd()
+      const stopPropagation = sinon.spy()
+      const preventDefault = sinon.spy()
+      onTouchEndCapture({ stopPropagation, preventDefault })
+
+      assert.ok(stopPropagation.calledOnce)
+      assert.ok(preventDefault.calledOnce)
 
       assert.ok(pre.getSettle.calledOnce)
       assert.ok(react.come.calledOnce)
@@ -560,7 +561,7 @@ describe(`onTransitionEnd`, () => {
 
       const element = { style: { transform: 'translateZ(0px)' } }
       const e = { target: element, currentTarget: element }
-      assert.equal(onTransitionEnd(e), false)
+      assert.equal(onTransitionEnd(e), undefined)
     }
   })
 

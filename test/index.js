@@ -8,8 +8,12 @@ enzyme.configure({ adapter: new Adapter() })
 describe(`components`, () => {
   const components = require('../src')
 
-  it(`instance`, () =>
-    all({}, wrapper => {
+  it(`instance`, () => {
+    const currentRaf = window.requestAnimationFrame
+    const raf = sinon.spy()
+    window.requestAnimationFrame = raf
+
+    return all({}, wrapper => {
       const instance = wrapper.instance()
 
       const { renders } = instance
@@ -24,9 +28,9 @@ describe(`components`, () => {
       const ROOT = a('ROOT')
       assert.ok(Object.keys(ROOT).length === 5)
       assert.ok(typeof ROOT.ref === 'function')
-      assert.ok(typeof ROOT.onTouchStart === 'function')
-      assert.ok(typeof ROOT.onTouchMove === 'function')
-      assert.ok(typeof ROOT.onTouchEnd === 'function')
+      assert.ok(typeof ROOT.onTouchStartCapture === 'function')
+      assert.ok(typeof ROOT.onTouchMoveCapture === 'function')
+      assert.ok(typeof ROOT.onTouchEndCapture === 'function')
       assert.deepEqual(ROOT.style, {
         position: 'absolute',
         top: 0,
@@ -54,12 +58,14 @@ describe(`components`, () => {
         overflowScrolling: 'touch',
         WebkitOverflowScrolling: 'touch'
       })
-    }))
+    }).then(() => {
+      window.requestAnimationFrame = currentRaf
+    })
+  })
 
   it(`props: { mountWithShut }`, () => {
     const currentRaf = window.requestAnimationFrame
     const raf = sinon.spy()
-
     window.requestAnimationFrame = raf
 
     return all({ mountWithShut: true }).then(() => {
@@ -73,10 +79,17 @@ describe(`components`, () => {
     })
   })
 
-  it(`!props.scroll`, () =>
-    all({ notScroll: true }, wrapper =>
+  it(`!props.scroll`, () => {
+    const currentRaf = window.requestAnimationFrame
+    const raf = sinon.spy()
+    window.requestAnimationFrame = raf
+
+    return all({ notScroll: true }, wrapper =>
       assert.equal(wrapper.instance().renders.overflowY(), 'hidden')
-    ))
+    ).then(() => {
+      window.requestAnimationFrame = currentRaf
+    })
+  })
 
   function all(props, cb) {
     return Promise.all(
@@ -130,9 +143,9 @@ describe(`Pre.js`, () => {
   it(`kill`, () => {
     const pre = new Pre()
     pre.init(touch)
-    assert.equal(pre.active(), true)
+    assert.equal(pre.canMove(), true)
     pre.kill()
-    assert.equal(pre.active(), false)
+    assert.equal(pre.canMove(), false)
   })
 
   describe(`notScroll`, () => {
