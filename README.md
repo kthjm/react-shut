@@ -23,16 +23,14 @@ import { ShutFromRight as Shut } from 'react-shut'
 const mountWithShut = true
 const Quit = props => <div onClick={props.fn} />
 
-export default props => (
+export default props =>
   <Shut {...{
     mountWithShut,
     Quit,
-    onComeEnd: () => {},
-    onQuitEnd: () => {}
+    onQuitEnd: (e) => {}
   }}>
     {props.children}
   </Shut>
-)
 ```
 
 ## Components
@@ -48,11 +46,10 @@ export default props => (
 passed `{ fn }` as props. `fn()` start quit animation.
 
 #### `mountWithShut: boolean`
-mount with shut-animation.
+about mounting with shut-animation.
 
-#### `onComeEnd: (SyntheticTransitionEvent<HTMLDivElement>)`
-
-#### `onQuitEnd: (SyntheticTransitionEvent<HTMLDivElement>)`
+#### `onComeEnd/onQuitEnd: (e) => {}`
+Their behavior can be confirmed in demo's console.
 
 #### `background: string`
 
