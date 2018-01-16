@@ -16,13 +16,16 @@ describe(`components`, () => {
     return all({}, wrapper => {
       const instance = wrapper.instance()
 
-      const { renders } = instance
-      assert.ok(Object.keys(renders).length === 4)
-      assert.ok(typeof renders.transform === 'function')
-      assert.ok(typeof renders.transitionDuration === 'function')
-      assert.ok(typeof renders.background === 'function')
-      assert.ok(typeof renders.overflowY === 'function')
+      // this.renderValues
+      const { renderValues } = instance
+      const results = renderValues()
+      assert.ok(Object.keys(results).length === 4)
+      assert.ok(typeof results.transform === 'string')
+      assert.ok(typeof results.transitionDuration === 'string')
+      assert.ok(typeof results.background === 'string')
+      assert.ok(typeof results.overflowY === 'string')
 
+      // this.a
       const { a } = instance
 
       const ROOT = a('ROOT')
@@ -85,7 +88,7 @@ describe(`components`, () => {
     window.requestAnimationFrame = raf
 
     return all({ notScroll: true }, wrapper =>
-      assert.equal(wrapper.instance().renders.overflowY(), 'hidden')
+      assert.equal(wrapper.instance().renderValues().overflowY, 'hidden')
     ).then(() => {
       window.requestAnimationFrame = currentRaf
     })

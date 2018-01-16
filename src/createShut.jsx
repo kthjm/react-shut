@@ -2,33 +2,47 @@
 import React from 'react'
 import Atra from 'atra'
 import Pre from './Pre.js'
-import { BACKGROUND, isFnc, isNum } from './util.js'
+import { BACKGROUND, isFnc } from './util.js'
 import {
   type Seed,
-  type Transform,
-  type TransitionDuration,
   type Come,
   type Quit,
   type CanInit,
-  type GetRootSize,
-  type GetRootWidth
+  type GetRootSize
 } from './type.js'
 
-const SCROLL_BAR = 17
+type State = { value: number }
+
+type Props = {
+  children: React$Node,
+  mountWithShut?: boolean,
+  Quit?: () => React$Node,
+  onQuitEnd?: (e: SyntheticTransitionEvent<HTMLDivElement>) => void,
+  onQuitEnd?: (e: SyntheticTransitionEvent<HTMLDivElement>) => void,
+  background?: string,
+  duration?: number,
+  touchRatio?: number,
+  quitRatio?: number,
+  notScroll?: boolean
+}
+
 const raf = (fn: () => void) => window.requestAnimationFrame(fn)
 
 export default (seed: Seed): React$ComponentType<*> =>
   class Shut extends React.Component<Props,State> {
     nowRootSize: number
-    mountWithHidden: boolean
     pre: Pre
     come: Come
     quit: Quit
     canInit: CanInit
+    a: (name: string, opts: any) => any
+    renderValues: () => {
+      transform: string,
+      transitionDuration: false | string,
+      background: string,
+      overflowY: string
+    }
     getRootSize: GetRootSize
-    getRootWidth: GetRootWidth
-    a: Atra$Result
-    renders: Renders
 
     constructor(props) {
       super(props)
@@ -37,12 +51,8 @@ export default (seed: Seed): React$ComponentType<*> =>
 
       // state
       this.nowRootSize = unique.firstRootSize
-      this.mountWithHidden = props.mountWithShut && props.hiddenBar
       this.pre = new Pre()
-      this.state = {
-        rootWidth: undefined,
-        value: props.mountWithShut ? this.nowRootSize : 0
-      }
+      this.state = { value: props.mountWithShut ? this.nowRootSize : 0 }
 
       // core
       this.come = () => this.setState({ value: 0 })
@@ -55,46 +65,26 @@ export default (seed: Seed): React$ComponentType<*> =>
         onTouchStartCapture: ({ touches }) => this.canInit(touches) && this.pre.init(touches[0]),
         onTouchMoveCapture: unique.onTouchMoveCapture,
         onTouchEndCapture: unique.onTouchEndCapture,
-        onTransitionEnd: !this.mountWithHidden ? unique.onTransitionEnd : (e) => {
-          if(this.mountWithHidden){
-            e.persist()
-            this.mountWithHidden = false
-            this.forceUpdate(() => unique.onTransitionEnd(e, true))
-          }else{
-            unique.onTransitionEnd(e)
-          }
-        }
+        onTransitionEnd: unique.onTransitionEnd
       })
 
       // render
-      this.renders = {
-        transform: unique.transform,
-        transitionDuration: unique.transitionDuration,
-        background: () => this.props.background || BACKGROUND,
-        overflowY: () => (
-          !this.mountWithHidden && !this.props.notScroll && this.state.value === 0
-            ? 'scroll'
-            : 'hidden'
-        )
-      }
+      this.renderValues = () => ({
+        transform: unique.transform(),
+        transitionDuration: unique.transitionDuration(),
+        background: this.props.background || BACKGROUND,
+        overflowY: !this.props.notScroll && this.state.value === 0 ? 'scroll' : 'hidden'
+      })
     }
 
     render() {
-      const { a } = this
-      const transform = this.renders.transform()
-      const transitionDuration = this.renders.transitionDuration()
-      const background = this.renders.background()
-      const overflowY = this.renders.overflowY()
-
-      const { rootWidth } = this.state
-      const width = (isNum(rootWidth) && overflowY === 'scroll' && this.props.hiddenBar)
-        ? rootWidth + SCROLL_BAR
-        : '100%'
+      const { a, renderValues } = this
+      const { transform, transitionDuration, background, overflowY } = renderValues()
 
       return (
         <div {...a('ROOT')}>
           <div {...a('MOVE', { style: { transform, transitionDuration, background } })}>
-            <div {...a('WRAP', { style: { overflowY, width } })}>
+            <div {...a('WRAP', { style: { overflowY } })}>
               {this.props.children}
             </div>
             {this.createQuit()}
@@ -109,15 +99,11 @@ export default (seed: Seed): React$ComponentType<*> =>
 
     componentDidMount() {
       this.setRootSize()
-      const value = this.props.mountWithShut ? 0 : this.state.value
-      const rootWidth = this.getRootWidth()
-      return raf(() => this.setState({ rootWidth, value }))
+      return this.props.mountWithShut && raf(this.come)
     }
 
     componentDidUpdate() {
       this.setRootSize()
-      const rootWidth = this.getRootWidth()
-      return rootWidth !== this.state.rootWidth && this.setState({ rootWidth })
     }
 
     createQuit() {
@@ -163,31 +149,3 @@ const A = ({
     }
   }
 })
-
-type State = {
-  rootWidth: void | number,
-  value: number
-}
-
-type Props = {
-  children: React$Node,
-  mountWithShut?: boolean,
-  Quit?: () => React$Node,
-  onQuitEnd?: (e: SyntheticTransitionEvent<HTMLDivElement>) => void,
-  onQuitEnd?: (e: SyntheticTransitionEvent<HTMLDivElement>) => void,
-  background?: string,
-  duration?: number,
-  touchRatio?: number,
-  quitRatio?: number,
-  notScroll?: boolean,
-  hiddenBar?: boolean
-}
-
-type Atra$Result = (name: string, opts: any) => any
-
-type Renders = {
-  transform: Transform,
-  transitionDuration: TransitionDuration,
-  background: () => string,
-  overflowY: () => string
-}

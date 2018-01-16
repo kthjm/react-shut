@@ -1,6 +1,6 @@
 {
   "name": "react-shut",
-  "version": "1.1.0",
+  "version": "2.0.0",
   "repository": "kthjm/react-shut",
   "author": "kthjm <toxictoxer@gmail.com>",
   "license": "MIT",
@@ -30,7 +30,7 @@
     "process:cjs": "node dist/react-shut.cjs.js",
     "process:min": "node dist/react-shut.min.js",
     "process": "run-p process:cjs process:min",
-    "format": "prettier --write **/*.js package.json README.md",
+    "format": "prettier --write **/*.js package.json",
     "//copy": "flow-copy-source --verbose src dist",
     "coverage": "nyc report --reporter=lcov && codecov"
   },
