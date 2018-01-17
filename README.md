@@ -20,24 +20,17 @@ yarn add react-shut
 ```js
 import { ShutFromRight as Shut } from 'react-shut'
 
-export default props => (
-  <Shut
-    {...{
-      mountWithShut: true,
-      Quit: props => <div onClick={props.fn} />,
-      onComeEnd: () => {},
-      onQuitEnd: () => {},
-      background: '#485736',
-      duration: 2,
-      touchRatio: 0.2,
-      quitRatio: 0.8,
-      notScroll: true,
-      hiddenBar: true
-    }}
-  >
+const mountWithShut = true
+const Quit = props => <div onClick={props.fn} />
+
+export default props =>
+  <Shut {...{
+    mountWithShut,
+    Quit,
+    onQuitEnd: (e) => {}
+  }}>
     {props.children}
   </Shut>
-)
 ```
 
 ## Components
@@ -49,25 +42,24 @@ export default props => (
 
 ## Props
 
-##### `mountWithShut: boolean`
+#### `Quit: React$Component`
+passed `{ fn }` as props. `fn()` start quit animation.
 
-##### `Quit: React$Component`
+#### `mountWithShut: boolean`
+about mounting with shut-animation.
 
-##### `onComeEnd: (SyntheticTransitionEvent<HTMLDivElement>)`
+#### `onComeEnd/onQuitEnd: (e) => {}`
+Their behavior can be confirmed in demo's console.
 
-##### `onQuitEnd: (SyntheticTransitionEvent<HTMLDivElement>)`
+#### `background: string`
 
-##### `background: string`
+#### `duration: number`
 
-##### `duration: number`
+#### `touchRatio: number`
 
-##### `touchRatio: number`
+#### `quitRatio: number`
 
-##### `quitRatio: number`
-
-##### `notScroll: boolean`
-
-##### `hiddenBar: boolean`
+#### `notScroll: boolean`
 
 ## License
 

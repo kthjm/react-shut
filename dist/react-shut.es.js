@@ -9,9 +9,6 @@ var QUIT_RATIO = 0.6
 var isFnc = function isFnc(target) {
   return typeof target === 'function'
 }
-var isNum = function isNum(target) {
-  return typeof target === 'number'
-}
 
 //
 
@@ -201,7 +198,6 @@ var Pre = (function() {
 })()
 
 //
-var SCROLL_BAR = 17
 var raf = function raf(fn) {
   return window.requestAnimationFrame(fn)
 }
@@ -222,10 +218,8 @@ var createShut = function(seed) {
 
       // state
       _this.nowRootSize = unique.firstRootSize
-      _this.mountWithHidden = props.mountWithShut && props.hiddenBar
       _this.pre = new Pre()
       _this.state = {
-        rootWidth: undefined,
         value: props.mountWithShut ? _this.nowRootSize : 0
 
         // core
@@ -245,34 +239,19 @@ var createShut = function(seed) {
         },
         onTouchMoveCapture: unique.onTouchMoveCapture,
         onTouchEndCapture: unique.onTouchEndCapture,
-        onTransitionEnd: !_this.mountWithHidden
-          ? unique.onTransitionEnd
-          : function(e) {
-              if (_this.mountWithHidden) {
-                e.persist()
-                _this.mountWithHidden = false
-                _this.forceUpdate(function() {
-                  return unique.onTransitionEnd(e, true)
-                })
-              } else {
-                unique.onTransitionEnd(e)
-              }
-            }
+        onTransitionEnd: unique.onTransitionEnd
       })
 
       // render
-      _this.renders = {
-        transform: unique.transform,
-        transitionDuration: unique.transitionDuration,
-        background: function background() {
-          return _this.props.background || BACKGROUND
-        },
-        overflowY: function overflowY() {
-          return !_this.mountWithHidden &&
-            !_this.props.notScroll &&
-            _this.state.value === 0
-            ? 'scroll'
-            : 'hidden'
+      _this.renderValues = function() {
+        return {
+          transform: unique.transform(),
+          transitionDuration: unique.transitionDuration(),
+          background: _this.props.background || BACKGROUND,
+          overflowY:
+            !_this.props.notScroll && _this.state.value === 0
+              ? 'scroll'
+              : 'hidden'
         }
       }
       return _this
@@ -282,19 +261,14 @@ var createShut = function(seed) {
       {
         key: 'render',
         value: function render() {
-          var a = this.a
+          var a = this.a,
+            renderValues = this.renderValues
 
-          var transform = this.renders.transform()
-          var transitionDuration = this.renders.transitionDuration()
-          var background = this.renders.background()
-          var overflowY = this.renders.overflowY()
-
-          var rootWidth = this.state.rootWidth
-
-          var width =
-            isNum(rootWidth) && overflowY === 'scroll' && this.props.hiddenBar
-              ? rootWidth + SCROLL_BAR
-              : '100%'
+          var _renderValues = renderValues(),
+            transform = _renderValues.transform,
+            transitionDuration = _renderValues.transitionDuration,
+            background = _renderValues.background,
+            overflowY = _renderValues.overflowY
 
           return React.createElement(
             'div',
@@ -310,7 +284,7 @@ var createShut = function(seed) {
               }),
               React.createElement(
                 'div',
-                a('WRAP', { style: { overflowY: overflowY, width: width } }),
+                a('WRAP', { style: { overflowY: overflowY } }),
                 this.props.children
               ),
               this.createQuit()
@@ -327,25 +301,14 @@ var createShut = function(seed) {
       {
         key: 'componentDidMount',
         value: function componentDidMount() {
-          var _this2 = this
-
           this.setRootSize()
-          var value = this.props.mountWithShut ? 0 : this.state.value
-          var rootWidth = this.getRootWidth()
-          return raf(function() {
-            return _this2.setState({ rootWidth: rootWidth, value: value })
-          })
+          return this.props.mountWithShut && raf(this.come)
         }
       },
       {
         key: 'componentDidUpdate',
         value: function componentDidUpdate() {
           this.setRootSize()
-          var rootWidth = this.getRootWidth()
-          return (
-            rootWidth !== this.state.rootWidth &&
-            this.setState({ rootWidth: rootWidth })
-          )
         }
       },
       {
@@ -406,9 +369,11 @@ var A = function A(_ref2) {
 var winnerWidth = function winnerWidth() {
   return window.innerWidth
 }
-
 var winnerHeight = function winnerHeight() {
   return window.innerHeight
+}
+var isNum = function isNum(target) {
+  return typeof target === 'number'
 }
 
 var createRootRef = function createRootRef(react, key) {
@@ -417,11 +382,7 @@ var createRootRef = function createRootRef(react, key) {
       var getRootSize = function getRootSize() {
         return target[key]
       }
-      var getRootWidth = function getRootWidth() {
-        return target.clientWidth
-      }
       react.getRootSize = getRootSize
-      react.getRootWidth = getRootWidth
     }
   }
 }
@@ -445,8 +406,8 @@ var createOnTouchEndCapture = function createOnTouchEndCapture(
 }
 
 var createOnTransitionEnd = function createOnTransitionEnd(react, onComeKey) {
-  return function(e, persisted) {
-    if (persisted || e.target === e.currentTarget) {
+  return function(e) {
+    if (e.target === e.currentTarget) {
       var target = e.currentTarget || e.target
 
       var onCuit =

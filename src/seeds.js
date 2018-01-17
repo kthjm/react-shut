@@ -1,17 +1,16 @@
 // @flow
-import { DURATION, TOUCH_RATIO, QUIT_RATIO, isFnc, isNum } from './util.js'
+import { DURATION, TOUCH_RATIO, QUIT_RATIO, isFnc } from './util.js'
 import {
   type Seed,
   type RootRef,
   type GetRootSize,
-  type GetRootWidth,
   type OnTouchEndCapture,
   type OnTransitionEnd
 } from './type.js'
 
 const winnerWidth = (): number => window.innerWidth
-
 const winnerHeight = (): number => window.innerHeight
+const isNum = (target: any): boolean => typeof target === 'number'
 
 const createRootRef = (
   react: *,
@@ -20,9 +19,7 @@ const createRootRef = (
   function(target) {
     if (target) {
       const getRootSize: GetRootSize = () => target[key]
-      const getRootWidth: GetRootWidth = () => target.clientWidth
       react.getRootSize = getRootSize
-      react.getRootWidth = getRootWidth
     }
   }
 
@@ -44,8 +41,8 @@ const createOnTouchEndCapture = (
 const createOnTransitionEnd = (
   react: *,
   onComeKey: 'translateX(0px)' | 'translateY(0px)'
-): OnTransitionEnd => (e, persisted) => {
-  if (persisted || e.target === e.currentTarget) {
+): OnTransitionEnd => e => {
+  if (e.target === e.currentTarget) {
     const target: HTMLDivElement = e.currentTarget || e.target
 
     const onCuit =

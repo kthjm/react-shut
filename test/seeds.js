@@ -59,7 +59,6 @@ describe(`rootRef`, () => {
       const { rootRef } = seed(react)
       rootRef({ clientWidth: 1000, clientHeight: 1000 })
       assert.ok(typeof react.getRootSize === 'function')
-      assert.ok(typeof react.getRootWidth === 'function')
     }
   })
 })
